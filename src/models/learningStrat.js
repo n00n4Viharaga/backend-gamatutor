@@ -1,0 +1,43 @@
+'use strict';
+const { Model } = require('sequelize');
+
+module.exports = (sequelize, DataTypes) => {
+  class LearningStrat extends Model {
+    static associate(models) {
+      LearningStrat.hasMany(models.CardList, { foreignKey: 'learningId', as: 'cardLists' });
+    }
+  }
+
+  LearningStrat.init({
+    learningId: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      field: 'learning_id'
+    },
+    learningStrategy: {
+      type: DataTypes.STRING(30),
+      allowNull: false,
+      validate: {
+        isIn: [['Rehearsal', 'Organization', 'Elaboration', 'Time Management', 'Help-Seeking', 'Metacognitive Self-Regulation']]
+      },
+      field: 'learning_strategy'
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'created_at'
+    }
+  }, {
+    sequelize,
+    modelName: 'LearningStrat',
+    tableName: 'learning_strats',
+    timestamps: false
+  });
+
+  return LearningStrat;
+};
