@@ -26,19 +26,18 @@
 **Response (201):**
 ```json
 {
-  "user": {
-    "userId": "uuid",
-    "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "username": "johndoe",
-    "role": "user",
-    "status": "offline",
-    "archived": false,
-    "createdAt": "2024-01-15T10:30:00.000Z"
-  },
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "accessTokenExpiry": "2024-01-22T10:30:00.000Z"
+    "user": {
+        "userId": "57a5522d-ff32-4259-b4de-c51555698bab",
+        "archived": false,
+        "createdAt": "2026-09-30T09:24:25.580Z",
+        "email": "superadmin123@gmail.com",
+        "firstName": "super",
+        "lastName": "admin",
+        "username": "superadmin123",
+        "role": "admin",
+        "status": "online "
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3YTU1MjJkLWZmMzItNDI1OS1iNGRlLWM1MTU1NTY5OGJhYiIsImlhdCI6MTc5MDc2MDI2NSwiZXhwIjoxNzkxMzY1MDY1fQ.fNiSxMC034kl225w1jhnzuhoR0rf3ubEtk-3dKPkcAI"
 }
 ```
 

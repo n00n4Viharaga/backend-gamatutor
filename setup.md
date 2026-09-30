@@ -485,26 +485,29 @@ npx sequelize-auto \
 
 ```javascript
 const { sequelize } = require('../config/database');
-const User = require('./user');
-const Token = require('./token');
-const Card = require('./card');
-const CardList = require('./cardList');
-const LearningStrat = require('./learningStrat');
-const ColumnMovement = require('./columnMovement');
-const Notification = require('./notification');
-const Chat = require('./chat');
-const Friendship = require('./friendship');
-const LlmPromptTemplate = require('./llmPromptTemplate');
-const MslqStaticQuestion = require('./mslqStaticQuestion');
-const UserQuizResult = require('./userQuizResult');
-const MonthlyEvaluation = require('./monthlyEvaluation');
-const CardListCollab = require('./cardListCollab');
-const CardListChat = require('./cardListChat');
-const UserActivityLog = require('./userActivityLog');
-const LlmRecommendationHistory = require('./llmRecommendationHistory');
-const AvatarComponent = require('./avatarComponent');
-const UserAvatar = require('./userAvatar');
-const AvatarUnlock = require('./avatarUnlock');
+const { DataTypes } = require('sequelize');
+
+// 1. Inisialisasi setiap model dengan memasukkan (sequelize, DataTypes)
+const User = require('./user')(sequelize, DataTypes);
+const Token = require('./token')(sequelize, DataTypes);
+const Card = require('./card')(sequelize, DataTypes);
+const CardList = require('./cardList')(sequelize, DataTypes);
+const LearningStrat = require('./learningStrat')(sequelize, DataTypes);
+const ColumnMovement = require('./columnMovement')(sequelize, DataTypes);
+const Notification = require('./notification')(sequelize, DataTypes);
+const Chat = require('./chat')(sequelize, DataTypes);
+const Friendship = require('./friendship')(sequelize, DataTypes);
+const LlmPromptTemplate = require('./llmPromptTemplate')(sequelize, DataTypes);
+const MslqStaticQuestion = require('./mslqStaticQuestion')(sequelize, DataTypes);
+const UserQuizResult = require('./userQuizResult')(sequelize, DataTypes);
+const MonthlyEvaluation = require('./monthlyEvaluation')(sequelize, DataTypes);
+const CardListCollab = require('./cardListCollab')(sequelize, DataTypes);
+const CardListChat = require('./cardListChat')(sequelize, DataTypes);
+const UserActivityLog = require('./userActivityLog')(sequelize, DataTypes);
+const LlmRecommendationHistory = require('./llmRecommendationHistory')(sequelize, DataTypes);
+const AvatarComponent = require('./avatarComponent')(sequelize, DataTypes);
+const UserAvatar = require('./userAvatar')(sequelize, DataTypes);
+const AvatarUnlock = require('./avatarUnlock')(sequelize, DataTypes);
 
 // A. USER MANAGEMENT & AUTHENTICATION
 // User -> Token (1:M)
@@ -564,7 +567,7 @@ User.hasMany(AvatarUnlock, { foreignKey: 'userId', as: 'avatarUnlocks' });
 AvatarUnlock.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // C. STRATEGI BELAJAR & CARD MANAGEMENT
-// Card -> CardList (1:1) - card_list.card_id is PK and FK to cards
+// Card -> CardList (1:1)
 Card.hasOne(CardList, { foreignKey: 'cardId', as: 'cardList' });
 CardList.belongsTo(Card, { foreignKey: 'cardId', as: 'card' });
 
@@ -590,18 +593,15 @@ CardListCollab.hasMany(CardListChat, { foreignKey: 'collabId', as: 'chats' });
 CardListChat.belongsTo(CardListCollab, { foreignKey: 'collabId', as: 'collab' });
 
 // E. GAMIFIKASI (AVATAR)
-// AvatarComponent -> UserAvatar (1:M) - multiple associations
 AvatarComponent.hasMany(UserAvatar, { foreignKey: 'hairId', as: 'hairUsers' });
 AvatarComponent.hasMany(UserAvatar, { foreignKey: 'faceId', as: 'faceUsers' });
 AvatarComponent.hasMany(UserAvatar, { foreignKey: 'shirtId', as: 'shirtUsers' });
 AvatarComponent.hasMany(UserAvatar, { foreignKey: 'pantsId', as: 'pantsUsers' });
 AvatarComponent.hasMany(UserAvatar, { foreignKey: 'specialId', as: 'specialUsers' });
 
-// AvatarComponent -> AvatarUnlock (1:M)
 AvatarComponent.hasMany(AvatarUnlock, { foreignKey: 'componentId', as: 'unlocks' });
 AvatarUnlock.belongsTo(AvatarComponent, { foreignKey: 'componentId', as: 'component' });
 
-// UserAvatar -> AvatarComponent (M:1) - multiple associations
 UserAvatar.belongsTo(AvatarComponent, { foreignKey: 'hairId', as: 'hair' });
 UserAvatar.belongsTo(AvatarComponent, { foreignKey: 'faceId', as: 'face' });
 UserAvatar.belongsTo(AvatarComponent, { foreignKey: 'shirtId', as: 'shirt' });

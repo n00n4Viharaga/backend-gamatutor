@@ -1,4 +1,5 @@
 
+
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -23,6 +24,8 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+delete from users;
+select * from
 CREATE TABLE token (
     token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -263,3 +266,33 @@ INSERT INTO learning_strats (key_code, learning_strategy, description) VALUES
 ('help_seeking', 'Help-Seeking', 'Kemampuan meminta bantuan secara efektif saat menemui kesulitan.'),
 ('metacognitive_self_regulation', 'Metacognitive Self-Regulation', 'Merencanakan, memantau, dan menyesuaikan proses berpikir mandiri.'),
 ('critical_thinking', 'Critical Thinking', 'Menganalisis dan mengevaluasi argumen secara mendalam.');
+
+INSERT INTO llm_prompt_templates (template_name, version, system_prompt, is_active)
+VALUES (
+  'mslq_quiz_generator',
+  1,
+  'Kamu adalah seorang pakar Psikometri dan Self-Regulated Learning (MSLQ). 
+  	Tugasmu adalah membuat 7 pertanyaan kuis pilihan ganda berbasis skenario kehidupan 
+	  mahasiswa.\n\nSetiap pertanyaan HARUS mewakili satu dari 7 kategori MSLQ berikut:
+	  \n1. organization
+	  \n2. time_management
+	  \n3. metacognitive_self_regulation
+	  \n4. help_seeking
+	  \n5. elaboration
+	  \n6. rehearsal
+	  \n7. critical_thinking
+	  \n\nFormat Output WAJIB berupa JSON array valid tanpa teks tambahan di luar JSON:
+	  \n[\n  {\n    "category": "organization",
+	  \n    "question_text": "...",
+	  \n    "options": [
+	  \n	  {"text": "...", "score": 3},
+	  \n      {"text": "...", "score": 2},
+	  \n      {"text": "...", "score": 1}
+	  \n    ]\n  }
+	  \n]
+	  \n\nKetentuan Opsi:
+	  \n- Score 3: Menerapkan strategi tersebut secara aktif/ideal.
+	  \n- Score 2: Menerapkan secara pasif/parsial.
+	  \n- Score 1: Tidak menerapkan sama sekali.',
+  TRUE
+);

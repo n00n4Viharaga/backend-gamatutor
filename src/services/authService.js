@@ -18,13 +18,12 @@ const register = async ({ email, password, firstName, lastName, username, role, 
   }
 
   const finalUsername = username || email.split('@')[0];
-  const hashedPassword = await bcrypt.hash(password, 12);
-
+ 
   const user = await User.create({
-    email,
-    password: hashedPassword,
-    firstName,
-    lastName,
+    email: email,
+    password: password,
+    firstName : firstName, 
+    lastName: lastName,
     username: finalUsername,
     role: role || 'user',
     status: status || 'online'
