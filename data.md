@@ -840,7 +840,7 @@ Build with: `flutter build apk --dart-define=API_BASE_URL=https://your-api.com/a
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-09-29 | Initial documentation for 20-table schema |
-
+---
 ---
 
 *Generated from backend setup.md - 20 tables, 20 models, 20 controllers/services/routes*
