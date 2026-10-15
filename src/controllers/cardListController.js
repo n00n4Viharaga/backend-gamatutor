@@ -1,4 +1,4 @@
-const { createCardList, getCardListByCardId, updateCardList, deleteCardList, archiveCardList, restoreCardList } = require('../services/cardListService');
+const { createCardList, getCardListByCardId, updateCardList, deleteCardList } = require('../services/cardListService');
 
 const createNewCardList = async (req, res, next) => {
   try {
@@ -36,22 +36,4 @@ const deleteExistingCardList = async (req, res, next) => {
   }
 };
 
-const archive = async (req, res, next) => {
-  try {
-    const cardList = await archiveCardList(req.params.cardId, req.user.userId);
-    res.json({ cardList });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const restore = async (req, res, next) => {
-  try {
-    const cardList = await restoreCardList(req.params.cardId, req.user.userId);
-    res.json({ cardList });
-  } catch (error) {
-    next(error);
-  }
-};
-
-module.exports = { createNewCardList, getCardList, updateExistingCardList, deleteExistingCardList, archive, restore };
+module.exports = { createNewCardList, getCardList, updateExistingCardList, deleteExistingCardList };

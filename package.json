@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "db:generate": "sequelize-auto -h localhost -d Gamatutor -u postgres -p 5432 -x \"DoNotEnter!\" -e postgres -o src/models -l esm --camelCase --tables users,token,cards,learning_strats,card_list,card_column_movements,question_strats,eval_strats,notifications,chat,friendships,llm_prompt_templates,mslq_static_questions,user_quiz_results,monthly_evaluations,card_list_collab,card_list_chat,user_activity_logs,llm_recommendation_histories,avatar_components,user_avatar,avatar_unlocks",
+    "db:generate": "sequelize-auto -h localhost -d Gamatutor -u postgres -p 5432 -x \"DoNotEnter!\" -e postgres -o src/models -l esm --camelCase --tables users,token,cards,learning_strats,card_list,card_column_movements,notifications,chat,friendships,llm_prompt_templates,mslq_static_questions,user_quiz_results,monthly_evaluations,card_list_collab,card_list_chat,user_activity_logs,llm_recommendation_histories,avatar_components,user_avatar,avatar_unlocks",
     "db:generate:all": "sequelize-auto -h localhost -d Gamatutor -u postgres -p 5432 -x \"DoNotEnter!\" -e postgres -o src/models -l esm --camelCase"
   },
   "keywords": ["express", "mvc", "kanban", "sequelize", "postgresql"],

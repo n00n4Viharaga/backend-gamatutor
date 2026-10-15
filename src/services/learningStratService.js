@@ -3,6 +3,7 @@ const { AppError } = require('../middleware/errorHandler');
 
 const createLearningStrat = async (data) => {
   return LearningStrat.create({
+    keyCode: data.keyCode,
     learningStrategy: data.learningStrategy,
     description: data.description
   });

@@ -1,5 +1,3 @@
-
-
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -25,7 +23,7 @@ CREATE TABLE users (
 );
 
 delete from users;
-select * from
+select * from users;
 CREATE TABLE token (
     token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -33,7 +31,7 @@ CREATE TABLE token (
     access_token_expiry TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
+select * from token;
 -- ==========================================
 -- B. LLM SYSTEM, PROMPT & MSLQ QUIZ ENGINE
 -- ==========================================
@@ -97,15 +95,10 @@ CREATE TABLE learning_strats (
 CREATE TABLE cards (
     card_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+	NmMatkul VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE card_list (
-    card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
     learning_id UUID NOT NULL REFERENCES learning_strats(learning_id) ON DELETE CASCADE,
-    sub_title VARCHAR(255),
-    description TEXT,
+	description TEXT,
     course_name VARCHAR(50),
     difficulty VARCHAR(10) CHECK (difficulty IN ('easy','medium','hard','expert')),
     priority VARCHAR(10) CHECK (priority IN ('low','medium','high','critical')),
@@ -129,6 +122,13 @@ CREATE TABLE card_list (
     goal_check_timestamp TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE card_list (
+    card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
+    sub_title VARCHAR(255),
+	end_time_list TIMESTAMPTZ
+); 
+ 
 
 CREATE TABLE card_column_movements (
     ccm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -164,7 +164,7 @@ CREATE TABLE chat (
 
 CREATE TABLE card_list_collab (
     collab_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    card_id UUID NOT NULL REFERENCES card_list(card_id) ON DELETE CASCADE,
+    card_id UUID NOT NULL REFERENCES cards(card_id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     role VARCHAR(10) CHECK (role IN ('owner','member')),
     added_at TIMESTAMPTZ DEFAULT NOW(),
@@ -178,7 +178,6 @@ CREATE TABLE card_list_chat (
     message TEXT NOT NULL,
     sent_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- ==========================================
 -- E. ACTIVITY LOGS & LLM RECOMMENDATIONS (DIREVISI TOTAL)
 -- ==========================================
@@ -265,7 +264,6 @@ INSERT INTO learning_strats (key_code, learning_strategy, description) VALUES
 ('time_management', 'Time Management', 'Mengatur jadwal, target pengerjaan, dan skala prioritas.'),
 ('help_seeking', 'Help-Seeking', 'Kemampuan meminta bantuan secara efektif saat menemui kesulitan.'),
 ('metacognitive_self_regulation', 'Metacognitive Self-Regulation', 'Merencanakan, memantau, dan menyesuaikan proses berpikir mandiri.'),
-('critical_thinking', 'Critical Thinking', 'Menganalisis dan mengevaluasi argumen secara mendalam.');
 
 INSERT INTO llm_prompt_templates (template_name, version, system_prompt, is_active)
 VALUES (

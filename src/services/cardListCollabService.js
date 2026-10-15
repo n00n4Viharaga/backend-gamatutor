@@ -1,11 +1,11 @@
-const { CardListCollab, CardList, User } = require('../models');
+const { CardListCollab, Card, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
 
 const addCollaborator = async (cardId, userId, role = 'member') => {
-  const cardList = await CardList.findByPk(cardId);
-  if (!cardList) {
-    throw new AppError('Card list not found', 404);
+  const card = await Card.findByPk(cardId);
+  if (!card) {
+    throw new AppError('Card not found', 404);
   }
 
   const user = await User.findByPk(userId);
@@ -30,7 +30,7 @@ const getAllCollaborations = async (filters = {}) => {
   return CardListCollab.findAll({
     where,
     include: [
-      { model: CardList, as: 'cardList', include: [{ model: User, as: 'card', attributes: ['cardId', 'title'] }] },
+      { model: Card, as: 'card', include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }] },
       { model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }
     ],
     order: [['addedAt', 'DESC']],
@@ -42,7 +42,7 @@ const getAllCollaborations = async (filters = {}) => {
 const getCollaborationById = async (id) => {
   const collab = await CardListCollab.findByPk(id, {
     include: [
-      { model: CardList, as: 'cardList' },
+      { model: Card, as: 'card' },
       { model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }
     ]
   });
@@ -63,7 +63,7 @@ const getCollaborationsByCard = async (cardId) => {
 const getCollaborationsByUser = async (userId) => {
   return CardListCollab.findAll({
     where: { userId },
-    include: [{ model: CardList, as: 'cardList', include: [{ model: User, as: 'card', attributes: ['cardId', 'title'] }] }],
+    include: [{ model: Card, as: 'card', include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }] }],
     order: [['addedAt', 'DESC']]
   });
 };

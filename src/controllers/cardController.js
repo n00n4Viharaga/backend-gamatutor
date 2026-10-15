@@ -38,7 +38,9 @@ const deleteExistingCard = async (req, res, next) => {
 
 const getCards = async (req, res, next) => {
   try {
+    console.time('GetCardsDuration');
     const cards = await getUserCards(req.user.userId, req.query);
+    console.timeEnd('GetCardsDuration'); // Cek berapa milidetik baris ini memakan waktu di console Node.js
     res.json({ cards });
   } catch (error) {
     next(error);

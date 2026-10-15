@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(20),
       allowNull: false,
       validate: {
-        isIn: [['pending', 'accepted', 'blocked']]
+        isIn: [['pending', 'accepted', 'declined', 'blocked']]
       },
       defaultValue: 'pending'
     },

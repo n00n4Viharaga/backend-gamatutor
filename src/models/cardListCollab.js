@@ -4,7 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class CardListCollab extends Model {
     static associate(models) {
-      CardListCollab.belongsTo(models.CardList, { foreignKey: 'cardId', as: 'cardList' });
+      CardListCollab.belongsTo(models.Card, { foreignKey: 'cardId', as: 'card' });
       CardListCollab.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
       CardListCollab.hasMany(models.CardListChat, { foreignKey: 'collabId', as: 'chats' });
     }
@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     cardId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: { model: 'card_list', key: 'card_id' },
+      references: { model: 'cards', key: 'card_id' },
       field: 'card_id'
     },
     userId: {

@@ -35,27 +35,29 @@ const resetPasswordValidation = [
 ];
 
 const cardValidation = [
+  body('nmMatkul').trim().isLength({ min: 1, max: 100 }).withMessage('NmMatkul required (max 100)'),
   body('title').trim().isLength({ min: 1, max: 255 }).withMessage('Title required (max 255)'),
+  body('learningId').isUUID().withMessage('Valid learning strategy ID required'),
+  body('description').optional().isString(),
+  body('courseName').optional().isString().isLength({ max: 50 }),
+  body('difficulty').optional().isIn(['easy', 'medium', 'hard', 'expert']),
+  body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
+  body('deadline').isISO8601().withMessage('Valid deadline required (YYYY-MM-DD)'),
+  body('url').optional().isString(),
+  body('startTime').isISO8601().withMessage('Valid start time required'),
+  body('endTime').optional().isISO8601(),
   handleValidationErrors
 ];
 
 const cardListValidation = [
-  body('cardId').isUUID().withMessage('Valid card ID required'),
-  body('subTitle').optional().isString(),
-  body('description').optional().isString(),
-  body('courseName').optional().isString(),
-  body('difficulty').optional().isIn(['easy', 'medium', 'hard', 'expert']),
-  body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
-  body('learningId').isUUID().withMessage('Valid learning strategy ID required'),
-  body('url').isURL().withMessage('Valid URL required'),
-  body('startTime').isISO8601().withMessage('Valid start time required'),
-  body('endTime').optional().isISO8601(),
-  body('deadline').isISO8601().withMessage('Valid deadline required'),
+  body('subTitle').optional().isString().isLength({ max: 255 }),
+  body('endTimeList').optional().isISO8601(),
   handleValidationErrors
 ];
 
 const learningStratValidation = [
-  body('learningStrategy').isIn(['Rehearsal', 'Organization', 'Elaboration', 'Time Management', 'Help-Seeking', 'Metacognitive Self-Regulation']).withMessage('Valid learning strategy required'),
+  body('keyCode').isIn(['rehearsal', 'organization', 'elaboration', 'time_management', 'help_seeking', 'metacognitive_self_regulation', 'critical_thinking']).withMessage('Valid key_code required'),
+  body('learningStrategy').notEmpty().withMessage('Learning strategy name required'),
   body('description').optional().isString(),
   handleValidationErrors
 ];
@@ -77,7 +79,9 @@ const notificationValidation = [
 ];
 
 const chatValidation = [
-  body('messageChat').optional().isString(),
+  body('friendId').isUUID().withMessage('Valid friend ID required'),
+  body('messageChat').notEmpty().withMessage('Message required'),
+  body('status').optional().isIn(['delivered', 'read']),
   handleValidationErrors
 ];
 

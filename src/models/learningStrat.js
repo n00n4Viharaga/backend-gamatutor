@@ -15,12 +15,18 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       field: 'learning_id'
     },
-    learningStrategy: {
-      type: DataTypes.STRING(30),
-      allowNull: false,
+    keyCode: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: true,
       validate: {
-        isIn: [['Rehearsal', 'Organization', 'Elaboration', 'Time Management', 'Help-Seeking', 'Metacognitive Self-Regulation']]
+        isIn: [['rehearsal', 'organization', 'elaboration', 'time_management', 'help_seeking', 'metacognitive_self_regulation', 'critical_thinking']]
       },
+      field: 'key_code'
+    },
+    learningStrategy: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
       field: 'learning_strategy'
     },
     description: {
@@ -29,7 +35,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     createdAt: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
       field: 'created_at'
     }
   }, {

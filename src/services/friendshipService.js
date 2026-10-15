@@ -142,8 +142,7 @@ const rejectFriendRequest = async (id, userId) => {
     throw new AppError('Request is not pending', 400);
   }
 
-  await friendship.destroy();
-  return { message: 'Friend request rejected' };
+  return friendship.update({ status: 'declined', updatedAt: new Date() });
 };
 
 const removeFriendship = async (id, userId) => {

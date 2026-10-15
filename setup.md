@@ -14,7 +14,7 @@ CREATE TABLE users (
     last_name VARCHAR(50),
     email VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,  -- Model validates length 6-16, column allows 255
+    password VARCHAR(255) NOT NULL,
     role VARCHAR(10) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
     status VARCHAR(7) DEFAULT 'offline' CHECK (status IN ('online', 'offline')),
     reset_token TEXT,
@@ -23,14 +23,16 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+delete from users;
+select * from users;
 CREATE TABLE token (
     token_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    access_token TEXT,  -- Model allows null
-    access_token_expiry TIMESTAMPTZ,  -- Model allows null
-    -- No created_at in model (timestamps: false)
+    access_token TEXT NOT NULL,
+    access_token_expiry TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
+select * from token;
 -- ==========================================
 -- B. LLM SYSTEM, PROMPT & MSLQ QUIZ ENGINE
 -- ==========================================
@@ -86,7 +88,7 @@ CREATE TABLE monthly_evaluations (
 CREATE TABLE learning_strats (
     learning_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     key_code VARCHAR(50) UNIQUE NOT NULL, -- ex: 'time_management', 'organization'
-    learning_strategy VARCHAR(50) NOT NULL, -- CHECK in model: Rehearsal, Organization, Elaboration, Time Management, Help-Seeking, Metacognitive Self-Regulation
+    learning_strategy VARCHAR(50) NOT NULL,
     description TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -95,19 +97,12 @@ CREATE TABLE cards (
     card_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    -- No created_at in model (timestamps: false)
-);
-
-CREATE TABLE card_list (
-    card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
-    learning_id UUID NOT NULL REFERENCES learning_strats(learning_id) ON DELETE CASCADE,
-    sub_title VARCHAR(255),
-    description TEXT,
+	description TEXT,
     course_name VARCHAR(50),
     difficulty VARCHAR(10) CHECK (difficulty IN ('easy','medium','hard','expert')),
     priority VARCHAR(10) CHECK (priority IN ('low','medium','high','critical')),
     deadline DATE NOT NULL,
-    url TEXT NOT NULL DEFAULT '',
+    url TEXT,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ,
     deleted BOOLEAN DEFAULT FALSE,
@@ -122,20 +117,23 @@ CREATE TABLE card_list (
     reflection_q3_what_learned TEXT,
     reflection_q4_value TEXT,
     reflection_completed_at TIMESTAMPTZ,
-    personal_best_time NUMERIC,
-    personal_best_grade NUMERIC,
-    personal_best_achieved_at TIMESTAMPTZ,
     goal_check_rating NUMERIC,
     goal_check_timestamp TIMESTAMPTZ,
-    -- No created_at in model (timestamps: false)
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE card_list (
+    card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
+    learning_id UUID NOT NULL REFERENCES learning_strats(learning_id) ON DELETE CASCADE,
+    sub_title VARCHAR(255)    
 );
 
 CREATE TABLE card_column_movements (
     ccm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     card_id UUID NOT NULL REFERENCES cards(card_id) ON DELETE CASCADE,
-    from_column VARCHAR(255),
-    to_column VARCHAR(255),
-    timestamp TIMESTAMPTZ,
+    from_column VARCHAR(100),
+    to_column VARCHAR(100),
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
     completed BOOLEAN DEFAULT FALSE
 );
 
@@ -146,7 +144,7 @@ CREATE TABLE friendships (
     fs_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     friend_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('pending','accepted','blocked')),  -- Model: pending, accepted, blocked (no 'declined')
+    status VARCHAR(20) NOT NULL CHECK (status IN ('pending','accepted','declined','blocked')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT unique_request UNIQUE (user_id, friend_id),
@@ -156,23 +154,21 @@ CREATE TABLE friendships (
 CREATE TABLE chat (
     chat_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    friend_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,  -- Model has no FK constraint for friend_id
+    friend_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     message_chat TEXT NOT NULL,
-    -- status VARCHAR(10) NOT NULL CHECK (status IN ('delivered','read')),  -- Model doesn't have status field
+    status VARCHAR(10) NOT NULL CHECK (status IN ('delivered','read')),
     time_chat TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Kolaborasi Card (Owner + Member)
 CREATE TABLE card_list_collab (
     collab_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    card_id UUID NOT NULL REFERENCES card_list(card_id) ON DELETE CASCADE,
+    card_id UUID NOT NULL REFERENCES cards(card_id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     role VARCHAR(10) CHECK (role IN ('owner','member')),
     added_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(card_id, user_id)
 );
 
--- Chat dalam Kolaborasi Card
 CREATE TABLE card_list_chat (
     chat_colab_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     collab_id UUID NOT NULL REFERENCES card_list_collab(collab_id) ON DELETE CASCADE,
@@ -182,7 +178,7 @@ CREATE TABLE card_list_chat (
 );
 
 -- ==========================================
--- E. ACTIVITY LOGS & LLM RECOMMENDATIONS
+-- E. ACTIVITY LOGS & LLM RECOMMENDATIONS (DIREVISI TOTAL)
 -- ==========================================
 
 -- 1. Log Aktivitas Ringkas (Sumber data LLM buat evaluasi bulanan)
@@ -261,21 +257,23 @@ Nama Tabel            | Primary Key        | Deskripsi Utama                    
 ----------------------|--------------------|--------------------------------------------------|---------------------------------|
 users                 | user_id            | Data kredensial, role (user/admin), status online| -                               |
 token                 | token_id           | Token autentikasi JWT / session                  | -                               |
-llm_prompt_templates  | prompt_id          | Template System Prompt dinamis untuk LLM         | -                               | 
+llm_prompt_templates  | prompt_id          | Template System Prompt dinamis untuk LLM         | -                              | 
 mslq_static_questions | static_q_id        | Bank soal statis MSLQ                            | options                         |
-user_quiz_results     | quiz_result_id     | Hasil kuis MSLQ & pemetaan lock/unlock           | unlocked_features,locked_features,|
+user_quiz_results     | quiz_result_id     | Hasil kuis MSLQ & pemetaan lock/unlock           | unlocked_features,              |
+                      |                    |                                                  | locked_features,                |
                       |                    |                                                  | answers_payload                 |
 monthly_evaluations   | eval_id            | Hasil evaluasi bulanan & feedback LLM            | detected_issues                 |
 learning_strats       | learning_id        | Daftar strategi belajar (master data)            | -                               |
-cards                 | card_id            | Container board utama user                       | -                               |
-card_list             | card_id (FK cards) | Item tugas, refleksi mandiri, dan nilai          | -                               |
+cards                 | card_id            | Container board utama user (nm_matkul, learning_id, refleksi, nilai) | - |
+card_list             | card_id (FK cards) | Item tugas tambahan (sub_title)                  | -                               |
 card_column_movements | ccm_id             | Tracker pergerakan kolom board                   | -                               |
 friendships           | fs_id              | Sistem relasi pertemanan                         | -                               |
 chat                  | chat_id            | Pesan langsung antar pengguna                    | -                               |
-card_list_collab      | collab_id          | Pengaturan kolaborator pada item tugas           | -                               |
+card_list_collab      | collab_id          | Pengaturan kolaborator pada tiap card (ref cards)| -                               |
 card_list_chat        | chat_colab_id      | Obrolan grup pada item kolaborasi                | -                               |
-user_activity_logs    | log_id             | Log aktivitas untuk analisis LLM                 |metadata                        |   
-llm_recommendation_histories | rec_id      | Audit trail rekomendasi buatan LLM               | input_context, llm_output       |  
+user_activity_logs    | log_id             | Log aktivitas untuk analisis LLM                 |metadata                      |   
+llm_recommendation_histories | rec_id      | Audit trail rekomendasi buatan LLM               | input_context,                  |
+                      |                    |                                                  | llm_output                    |  
 avatar_components     | ava_id             | Item aset avatar gamifikasi                      | -                               |
 user_avatar           | user_id (FK users) | Komponen avatar terpasang pada user              | -                               |
 avatar_unlocks        | ava_un_id          | Status kepemilikan komponen avatar               | -                               |
@@ -912,9 +910,9 @@ npm start             # Production
 |-------|-------------|-------------------|
 | users | user_id (UUID) | - |
 | token | token_id (UUID) | user_id → users |
-| cards | card_id (UUID) | user_id → users |
+| cards | card_id (UUID) | user_id → users, learning_id → learning_strats |
 | learning_strats | learning_id (UUID) | - |
-| card_list | card_id (UUID, PK+FK) | card_id → cards, learning_id → learning_strats |
+| card_list | card_id (UUID, PK+FK) | card_id → cards |
 | card_column_movements | ccm_id (UUID) | card_id → cards |
 | notifications | notif_id (UUID) | user_id → users, trigger_user_id → users |
 | chat | chat_id (UUID) | user_id → users, friend_id → users |
@@ -923,7 +921,7 @@ npm start             # Production
 | mslq_static_questions | static_q_id (UUID) | - |
 | user_quiz_results | quiz_result_id (UUID) | user_id → users |
 | monthly_evaluations | eval_id (UUID) | user_id → users |
-| card_list_collab | collab_id (UUID) | card_id → card_list, user_id → users |
+| card_list_collab | collab_id (UUID) | card_id → cards, user_id → users |
 | card_list_chat | chat_colab_id (UUID) | collab_id → card_list_collab, user_id → users |
 | user_activity_logs | log_id (UUID) | user_id → users |
 | llm_recommendation_histories | rec_id (UUID) | user_id → users |
@@ -931,19 +929,23 @@ npm start             # Production
 | user_avatar | user_id (UUID, PK+FK) | user_id → users, component FKs → avatar_components |
 | avatar_unlocks | ava_un_id (UUID) | user_id → users, component_id → avatar_components |
 
-### Important Observations (Based on Actual Model Code)
+### Important Observations (Based on Actual Model Code & QueryDb.sql)
 1. **No Boards/Columns tables** - The schema uses `card_column_movements` for tracking column transitions instead of explicit board/column entities
 2. **card_list extends cards** - 1:1 relationship where card_list.card_id is both PK and FK to cards
 3. **UUID everywhere** - All primary keys use UUID with gen_random_uuid()
 4. **token table** - Separate table for JWT tokens (stateful auth) rather than stateless JWT
 5. **No eval_strats table** - Database has 20 tables (excludes eval_strats); evaluation data flows through user_activity_logs + user_quiz_results → monthly_evaluations + llm_recommendation_histories
-6. **Column name note** - `learning_strats.learning_id` (not `lerning_id`) and `card_list.learning_id` in actual DB
+6. **Column name note** - `learning_strats.learning_id` (not `lerning_id`)
 7. **password length** - Model validates 6-16 chars, DB column allows VARCHAR(255)
 8. **Timestamps** - Most models use `timestamps: false` with explicit `createdAt`/`updatedAt` fields mapped to snake_case columns
 9. **Token & Card models** - No `created_at` column in model (timestamps: false, no createdAt field)
-10. **Chat model** - No `status` field in model (DB schema may have it but not in model)
-11. **Friendship status** - Model only has 'pending', 'accepted', 'blocked' (no 'declined')
-12. **Foreign keys in associations** - Use camelCase (`userId`, `cardId`, etc.) matching Sequelize model field names, not snake_case DB column names
+10. **cards table** - Has `nm_matkul` (required), `learning_id` FK to learning_strats, and all reflection/evaluation fields
+11. **card_list table** - Only has `card_id` (PK+FK), `sub_title`, `end_time_list` - NO `learning_id` 
+12. **card_list_collab** - References `cards` (not `card_list`) via `card_id`
+13. **Chat model** - Includes `status` field (delivered/read) and `friendId` FK
+14. **Friendship status** - Includes 'declined' status along with 'pending', 'accepted', 'blocked'
+15. **Foreign keys in associations** - Use camelCase (`userId`, `cardId`, etc.) matching Sequelize model field names, not snake_case DB column names
+16. **learning_strats** - Includes `key_code` field (UNIQUE) with 7 valid values: rehearsal, organization, elaboration, time_management, help_seeking, metacognitive_self_regulation, critical_thinking
 
 ### SSL for Production (Supabase, Neon, Railway)
 In `.env`:

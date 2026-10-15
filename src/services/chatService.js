@@ -8,9 +8,16 @@ const createChat = async (userId, data) => {
     throw new AppError('User not found', 404);
   }
 
+  const friend = await User.findByPk(data.friendId);
+  if (!friend) {
+    throw new AppError('Friend not found', 404);
+  }
+
   return Chat.create({
     userId,
-    messageChat: data.messageChat
+    friendId: data.friendId,
+    messageChat: data.messageChat,
+    status: data.status || 'delivered'
   });
 };
 
@@ -20,7 +27,10 @@ const getAllChats = async (filters = {}) => {
 
   return Chat.findAll({
     where,
-    include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }],
+    include: [
+      { model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] },
+      { model: User, as: 'recipient', attributes: ['userId', 'firstName', 'lastName', 'username'] }
+    ],
     order: [['timeChat', 'DESC']],
     limit: filters.limit || 50,
     offset: filters.offset || 0
@@ -29,7 +39,10 @@ const getAllChats = async (filters = {}) => {
 
 const getChatById = async (id) => {
   const chat = await Chat.findByPk(id, {
-    include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }]
+    include: [
+      { model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] },
+      { model: User, as: 'recipient', attributes: ['userId', 'firstName', 'lastName', 'username'] }
+    ]
   });
   if (!chat) {
     throw new AppError('Chat not found', 404);

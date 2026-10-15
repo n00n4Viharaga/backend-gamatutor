@@ -85,22 +85,22 @@ AvatarUnlock.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Card.hasOne(CardList, { foreignKey: 'cardId', as: 'cardList' });
 CardList.belongsTo(Card, { foreignKey: 'cardId', as: 'card' });
 
-// LearningStrat -> CardList (1:M)
-LearningStrat.hasMany(CardList, { foreignKey: 'learningId', as: 'cardLists' });
-CardList.belongsTo(LearningStrat, { foreignKey: 'learningId', as: 'learningStrat' });
+// Card -> LearningStrat (M:1)
+Card.belongsTo(LearningStrat, { foreignKey: 'learningId', as: 'learningStrat' });
+LearningStrat.hasMany(Card, { foreignKey: 'learningId', as: 'cards' });
 
 // Card -> ColumnMovement (1:M)
 Card.hasMany(ColumnMovement, { foreignKey: 'cardId', as: 'columnMovements' });
 ColumnMovement.belongsTo(Card, { foreignKey: 'cardId', as: 'card' });
 
+// Card -> CardListCollab (1:M)
+Card.hasMany(CardListCollab, { foreignKey: 'cardId', as: 'collaborations' });
+CardListCollab.belongsTo(Card, { foreignKey: 'cardId', as: 'card' });
+
 // D. KOLABORASI, CHAT & SOSIAL
 // Chat -> User (1:M) - as friend/recipient
 Chat.belongsTo(User, { foreignKey: 'friendId', as: 'recipient' });
 User.hasMany(Chat, { foreignKey: 'friendId', as: 'receivedChats' });
-
-// CardList -> CardListCollab (1:M)
-CardList.hasMany(CardListCollab, { foreignKey: 'cardId', as: 'collaborations' });
-CardListCollab.belongsTo(CardList, { foreignKey: 'cardId', as: 'cardList' });
 
 // CardListCollab -> CardListChat (1:M)
 CardListCollab.hasMany(CardListChat, { foreignKey: 'collabId', as: 'chats' });
