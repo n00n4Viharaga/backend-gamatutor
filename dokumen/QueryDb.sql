@@ -1,3 +1,5 @@
+
+
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -95,16 +97,15 @@ CREATE TABLE learning_strats (
 CREATE TABLE cards (
     card_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-	NmMatkul VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
     learning_id UUID NOT NULL REFERENCES learning_strats(learning_id) ON DELETE CASCADE,
 	description TEXT,
     course_name VARCHAR(50),
     difficulty VARCHAR(10) CHECK (difficulty IN ('easy','medium','hard','expert')),
     priority VARCHAR(10) CHECK (priority IN ('low','medium','high','critical')),
-    deadline DATE NOT NULL,
+    deadline TIMESTAMPTZ,
     url TEXT,
-    start_time TIMESTAMPTZ NOT NULL,
+    start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     deleted BOOLEAN DEFAULT FALSE,
     
@@ -123,12 +124,19 @@ CREATE TABLE cards (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+alter table cards
+alter column deadline type TIMESTAMPTZ;
+alter table cards
+drop column nm_matkul;
+
 CREATE TABLE card_list (
     card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
     sub_title VARCHAR(255),
 	end_time_list TIMESTAMPTZ
 ); 
- 
+
+alter table card_list
+add column start_time_list TIMESTAMPTZ
 
 CREATE TABLE card_column_movements (
     ccm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -255,7 +263,7 @@ CREATE TABLE notifications (
 -- G. DEFAULT DATA SEEDING
 -- ==========================================
 INSERT INTO users (first_name, last_name, email, username, password, role) 
-VALUES ('Super', 'Admin', 'superadmin@gmail.com', 'superadmin', '$2b$10$eA0E74M1iO4S1y5x3J1O4uGv71vR3W9/4E2W1a1Q5d1e2f3g4h5i', 'admin');
+VALUES ('Super', 'Admin', 'superadmin123@gmail.com', 'superadmin123', '$2a$12$qVQZC6kRQmZxIK/YAIT1M.Q7ai1BcpVQ9wclYh21DsO2ldLDWxJda', 'admin');
 
 INSERT INTO learning_strats (key_code, learning_strategy, description) VALUES
 ('rehearsal', 'Rehearsal', 'Mengingat atau mengulang informasi secara verbatim/hafalan.'),
@@ -294,3 +302,16 @@ VALUES (
 	  \n- Score 1: Tidak menerapkan sama sekali.',
   TRUE
 );
+
+select * from cards;
+
+update cards
+set start_time = null
+where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
+
+INSERT INTO card_column_movements (card_id, from_column) values
+('b530a2e1-d132-40b9-9196-9de3f2721ac7', 'planning');
+
+select * from card_column_movements;
+
+select * from card_list;

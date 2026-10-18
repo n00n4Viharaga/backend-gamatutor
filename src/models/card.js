@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Card.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
       Card.belongsTo(models.LearningStrat, { foreignKey: 'learningId', as: 'learningStrat' });
-      Card.hasOne(models.CardList, { foreignKey: 'cardId', as: 'cardList' });
+      Card.hasMany(models.CardList, { foreignKey: 'cardId', as: 'cardList' });
       Card.hasMany(models.ColumnMovement, { foreignKey: 'cardId', as: 'columnMovements' });
       Card.hasMany(models.CardListCollab, { foreignKey: 'cardId', as: 'collaborations' });
     }
@@ -24,11 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       references: { model: 'users', key: 'user_id' },
       field: 'user_id'
-    },
-    nmMatkul: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      field: 'nm_matkul'
     },
     title: {
       type: DataTypes.STRING(255),
@@ -74,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     startTime: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       field: 'start_time'
     },
     endTime: {

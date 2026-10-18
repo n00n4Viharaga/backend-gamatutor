@@ -20,7 +20,8 @@ const getCardList = async (req, res, next) => {
 
 const updateExistingCardList = async (req, res, next) => {
   try {
-    const cardList = await updateCardList(req.params.cardId, req.user.userId, req.body);
+    // Kirim cardId dan clId ke service
+    const cardList = await updateCardList(req.params.cardId, req.params.clId, req.user.userId, req.body);
     res.json({ cardList });
   } catch (error) {
     next(error);
@@ -29,7 +30,8 @@ const updateExistingCardList = async (req, res, next) => {
 
 const deleteExistingCardList = async (req, res, next) => {
   try {
-    await deleteCardList(req.params.cardId, req.user.userId);
+    // Kirim cardId dan clId ke service
+    await deleteCardList(req.params.cardId, req.params.clId, req.user.userId);
     res.json({ message: 'Card list deleted' });
   } catch (error) {
     next(error);

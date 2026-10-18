@@ -82,7 +82,7 @@ AvatarUnlock.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // C. STRATEGI BELAJAR & CARD MANAGEMENT
 // Card -> CardList (1:1)
-Card.hasOne(CardList, { foreignKey: 'cardId', as: 'cardList' });
+Card.hasMany(CardList, { foreignKey: 'cardId', as: 'cardList' });
 CardList.belongsTo(Card, { foreignKey: 'cardId', as: 'card' });
 
 // Card -> LearningStrat (M:1)

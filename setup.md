@@ -754,7 +754,7 @@ module.exports = {
 ### Learning Strategies
 - POST `/api/learning-strats` - Create learning strategy
 - GET `/api/learning-strats` - Get all learning strategies
-- GET `/api/learning-strats/:id` - Get learning strategy by ID
+- GET `/api/learning-strats/:learning_startegy` - Get learning strategy by learning_strategy
 - PUT `/api/learning-strats/:id` - Update learning strategy
 - DELETE `/api/learning-strats/:id` - Delete learning strategy
 

@@ -1,4 +1,4 @@
-const { Card, User, LearningStrat, CardList, ColumnMovement, CardListCollab } = require('../models');
+const { Card, User, LearningStrat, CardList, ColumnMovement, CardListCollab, sequelize } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 
 const createCard = async (userId, data) => {
@@ -7,10 +7,10 @@ const createCard = async (userId, data) => {
     throw new AppError('User not found', 404);
   }
 
-  if (!data.nmMatkul) {
-    throw new AppError('NmMatkul is required', 400);
+  if (!data.course_name) {
+    throw new AppError('course_name is required', 400);
   }
-  if (!data.learningId) {
+  if (!data.learningStrat) {
     throw new AppError('Learning strategy ID is required', 400);
   }
 
@@ -27,13 +27,17 @@ const getCardById = async (cardId, userId) => {
     where: { cardId, userId },
     include: [
       { model: LearningStrat, as: 'learningStrat' },
-      { model: CardList, as: 'cardList' },
+      {
+        model: CardList,
+        as: 'cardList',
+        separate: true // <--- TAMBAHKAN INI JUGA DI SINI
+      },
       { model: ColumnMovement, as: 'columnMovements', separate: true },
-      { 
-        model: CardListCollab, 
+      {
+        model: CardListCollab,
         as: 'collaborations',
         separate: true,
-        include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }] 
+        include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }]
       }
     ]
   });
@@ -44,21 +48,76 @@ const getCardById = async (cardId, userId) => {
 };
 
 const updateCard = async (cardId, userId, data) => {
-  const card = await Card.findOne({
-    where: { cardId, userId }
-  });
-  if (!card) {
-    throw new AppError('Card not found', 404);
-  }
+  const transaction = await sequelize.transaction();
 
-  if (data.learningId) {
-    const learningStrat = await LearningStrat.findByPk(data.learningId);
-    if (!learningStrat) {
-      throw new AppError('Learning strategy not found', 404);
+  try {
+    const card = await Card.findOne({
+      where: { cardId, userId },
+      transaction
+    });
+    if (!card) {
+      throw new AppError('Card not found', 404);
     }
-  }
 
-  return card.update(data);
+    if (data.learningId) {
+      const learningStrat = await LearningStrat.findByPk(data.learningId, { transaction });
+      if (!learningStrat) {
+        throw new AppError('Learning strategy not found', 404);
+      }
+    }
+
+    // Tangani pembaruan subtasks jika dikirim dari Flutter
+    if (data.subtasks !== undefined) {
+      await CardList.destroy({ where: { cardId }, transaction });
+      if (Array.isArray(data.subtasks) && data.subtasks.length > 0) {
+        const subtasksData = data.subtasks.map((sub) => {
+          const title = typeof sub === 'string' ? sub : sub.subTitle;
+          return {
+            cardId: card.cardId,
+            subTitle: title,
+            startTimeList: sub.startTimeList || null,
+            endTimeList: sub.endTimeList || null,
+          };
+        });
+        await CardList.bulkCreate(subtasksData, { transaction });
+      }
+      delete data.subtasks;
+    }
+
+    if (data.startTime && !card.startTime) {
+      await ColumnMovement.create({
+        cardId: card.cardId,
+        fromColumn: 'planning',
+        toColumn: 'monitoring',
+        timestamp: data.startTime
+      }, { transaction });
+    }
+    else if (!data.endTime && !card.endTime) {
+      await ColumnMovement.create({
+        cardId: card.cardId,
+        fromColumn: 'monitoring',
+        toColumn: 'controlling',
+        timestamp: data.endtime
+      }, { transaction });
+    }
+    else if (!data.reflection_completed_at) {
+      await ColumnMovement.create({
+        cardId: card.cardId,
+        fromColumn: 'controlling',
+        toColumn: 'reflection',
+        timestamp: data.reflection_completed_at
+      }, { transaction });
+    }
+
+    // Update data utama kartu
+    await card.update(data, { transaction });
+
+    await transaction.commit();
+    return getCardById(cardId, userId);
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 const deleteCard = async (cardId, userId) => {
@@ -73,27 +132,37 @@ const deleteCard = async (cardId, userId) => {
 };
 
 const getUserCards = async (userId, filters = {}) => {
-  const where = { userId };
-  return Card.findAll({
-    where,
-    include: [
-      { model: LearningStrat, as: 'learningStrat' },
-      { model: CardList, as: 'cardList' }, // hasOne aman digabung
-      { 
-        model: ColumnMovement, 
-        as: 'columnMovements', 
-        separate: true, // PENTING: Mencegah Cartesian Product
-        order: [['timestamp', 'ASC']]
-      },
-      { 
-        model: CardListCollab, 
-        as: 'collaborations',
-        separate: true, // PENTING: Mencegah Cartesian Product
-        include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }] 
-      }
-    ],
-    order: [['createdAt', 'DESC']]
-  });
+  try {
+    const where = { userId };
+    return Card.findAll({
+      where,
+      include: [
+        { model: LearningStrat, as: 'learningStrat' },
+        {
+          model: CardList,
+          as: 'cardList',
+          separate: true
+        },
+        {
+          model: ColumnMovement,
+          as: 'columnMovements',
+          separate: true,
+          order: [['timestamp', 'ASC']]
+        },
+        {
+          model: CardListCollab,
+          as: 'collaborations',
+          separate: true,
+          include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    return res.status(200).json({ cards });
+  }
+  catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = { createCard, getCardById, updateCard, deleteCard, getUserCards };

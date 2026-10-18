@@ -35,16 +35,14 @@ const resetPasswordValidation = [
 ];
 
 const cardValidation = [
-  body('nmMatkul').trim().isLength({ min: 1, max: 100 }).withMessage('NmMatkul required (max 100)'),
-  body('title').trim().isLength({ min: 1, max: 255 }).withMessage('Title required (max 255)'),
-  body('learningId').isUUID().withMessage('Valid learning strategy ID required'),
-  body('description').optional().isString(),
+  body('title').optional().notEmpty().withMessage('Title required (max 255)'),
+  body('learningId').optional().isUUID().withMessage('Valid learning strategy ID required'),body('description').optional().isString(),
   body('courseName').optional().isString().isLength({ max: 50 }),
   body('difficulty').optional().isIn(['easy', 'medium', 'hard', 'expert']),
   body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
-  body('deadline').isISO8601().withMessage('Valid deadline required (YYYY-MM-DD)'),
+  body('deadline').optional().isISO8601().withMessage('Valid deadline required (YYYY-MM-DD)'),
   body('url').optional().isString(),
-  body('startTime').isISO8601().withMessage('Valid start time required'),
+  body('startTime').optional().isISO8601().withMessage('Valid start time required'),
   body('endTime').optional().isISO8601(),
   handleValidationErrors
 ];
@@ -52,14 +50,27 @@ const cardValidation = [
 const cardListValidation = [
   body('subTitle').optional().isString().isLength({ max: 255 }),
   body('endTimeList').optional().isISO8601(),
+  body('startTimeList').optional().isISO8601(),
   handleValidationErrors
 ];
 
 const learningStratValidation = [
   body('keyCode').isIn(['rehearsal', 'organization', 'elaboration', 'time_management', 'help_seeking', 'metacognitive_self_regulation', 'critical_thinking']).withMessage('Valid key_code required'),
-  body('learningStrategy').notEmpty().withMessage('Learning strategy name required'),
+  body('learningStrategy').notEmpty().isIn(['rehearsal', 'organization', 'elaboration', 'time management', 'help seeking', 'metacognitive self regulation', 'critical_thinking']).withMessage('Learning strategy name required'),
   body('description').optional().isString(),
   handleValidationErrors
+];
+
+const learningStratValidationName =[
+  param('learningStrategy')
+    .notEmpty()
+    .custom((value) => {
+      const validStrategies = ['rehearsal', 'organization', 'elaboration', 'time management', 'help seeking', 'metacognitive self regulation', 'critical thinking'];
+      if (!validStrategies.includes(value.toLowerCase())) {
+        throw new Error('Valid learning strategy required');
+      }
+      return true;
+    }),
 ];
 
 const columnMovementValidation = [
@@ -273,6 +284,7 @@ module.exports = {
   cardValidation,
   cardListValidation,
   learningStratValidation,
+  learningStratValidationName,
   columnMovementValidation,
   notificationValidation,
   chatValidation,

@@ -19,9 +19,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       allowNull: true,
       unique: true,
-      validate: {
-        isIn: [['rehearsal', 'organization', 'elaboration', 'time_management', 'help_seeking', 'metacognitive_self_regulation', 'critical_thinking']]
-      },
       field: 'key_code'
     },
     learningStrategy: {

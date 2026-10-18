@@ -7,12 +7,7 @@ const createCardList = async (cardId, userId, data) => {
     throw new AppError('Card not found', 404);
   }
 
-  const existing = await CardList.findByPk(cardId);
-  if (existing) {
-    throw new AppError('Card list already exists for this card', 400);
-  }
-
-  return CardList.create({ cardId, subTitle: data.subTitle, endTimeList: data.endTimeList });
+  return CardList.create({ cardId, subTitle: data.subTitle, endTimeList: data.endTimeList, startTimeList: data.startTimeList });
 };
 
 const getCardListByCardId = async (cardId, userId) => {
@@ -21,7 +16,7 @@ const getCardListByCardId = async (cardId, userId) => {
     throw new AppError('Card not found', 404);
   }
 
-  const cardList = await CardList.findByPk(cardId);
+  const cardList = await CardList.findOne({ where: { cardId } });
 
   if (!cardList) {
     throw new AppError('Card list not found', 404);
@@ -30,27 +25,28 @@ const getCardListByCardId = async (cardId, userId) => {
   return cardList;
 };
 
-const updateCardList = async (cardId, userId, data) => {
+const updateCardList = async (cardId, clId, userId, data) => {
   const card = await Card.findOne({ where: { cardId, userId } });
   if (!card) {
     throw new AppError('Card not found', 404);
   }
 
-  const cardList = await CardList.findByPk(cardId);
+  // Cari berdasarkan clId dan pastikan milik cardId tersebut
+  const cardList = await CardList.findOne({ where: { clId, cardId } });
   if (!cardList) {
     throw new AppError('Card list not found', 404);
   }
 
-  return cardList.update({ subTitle: data.subTitle, endTimeList: data.endTimeList });
+  return cardList.update({ subTitle: data.subTitle, endTimeList: data.endTimeList, startTimeList: data.startTimeList });
 };
 
-const deleteCardList = async (cardId, userId) => {
+const deleteCardList = async (cardId, clId, userId) => {
   const card = await Card.findOne({ where: { cardId, userId } });
   if (!card) {
     throw new AppError('Card not found', 404);
   }
 
-  const cardList = await CardList.findByPk(cardId);
+  const cardList = await CardList.findOne({ where: { clId, cardId } });
   if (!cardList) {
     throw new AppError('Card list not found', 404);
   }
