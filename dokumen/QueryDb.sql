@@ -130,13 +130,20 @@ alter table cards
 drop column nm_matkul;
 
 CREATE TABLE card_list (
-    card_id UUID PRIMARY KEY REFERENCES cards(card_id) ON DELETE CASCADE,
+	cl_id UUID PRIMARY KEY,
+    card_id UUID NOT NULL REFERENCES cards(card_id) ON DELETE CASCADE,
     sub_title VARCHAR(255),
 	end_time_list TIMESTAMPTZ
 ); 
 
 alter table card_list
 add column start_time_list TIMESTAMPTZ
+
+alter table card_list
+add column cl_id UUID DEFAULT gen_random_uuid() NOT NULL
+
+alter table card_list
+ADD CONSTRAINT card_list_pkey PRIMARY KEY (cl_id);
 
 CREATE TABLE card_column_movements (
     ccm_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -304,14 +311,64 @@ VALUES (
 );
 
 select * from cards;
+select * from learning_strats
 
 update cards
 set start_time = null
 where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
 
+update cards
+set learning_id = 'ff64041d-30d1-4ef4-86ab-0b214a928dc4'
+where card_id = 'bf504c46-08fc-457e-bb45-7ef7075556c7'
+
+INSERT INTO cards(user_id,title,learning_id,description,course_name,difficulty,priority,deadline)
+values
+('57a5522d-ff32-4259-b4de-c51555698bab','Subquery','1938deff-588a-48ce-ae55-124262f4ce62','Belajar Subquery di SQL Server','Basis Data','hard','high','2026-10-20'),
+('57a5522d-ff32-4259-b4de-c51555698bab','sorting','1938deff-588a-48ce-ae55-124262f4ce62','Belajar algoritma sorting','Algoritma','hard','high','2026-10-18')
+
+INSERT INTO cards(user_id,title,learning_id,description,course_name,difficulty,priority,deadline)
+values
+('57a5522d-ff32-4259-b4de-c51555698bab','Class, Method, dan Function','1938deff-588a-48ce-ae55-124262f4ce62','Belajar Membuat Class, Method, dan Function dengan Bahasa C++','Pemrograman','medium','medium','2026-10-22')
+
 INSERT INTO card_column_movements (card_id, from_column) values
 ('b530a2e1-d132-40b9-9196-9de3f2721ac7', 'planning');
 
-select * from card_column_movements;
+INSERT INTO card_list (card_id,sub_title) values
+('b530a2e1-d132-40b9-9196-9de3f2721ac7', 'Filtering'),
+('b530a2e1-d132-40b9-9196-9de3f2721ac7', 'Grouping')
 
-select * from card_list;
+INSERT INTO card_list (card_id,sub_title) values
+('db36e069-f106-4a97-a327-2ffae3d97f6e', 'Scalar Subquery'),
+('db36e069-f106-4a97-a327-2ffae3d97f6e', 'Multi-row Subquery')
+
+INSERT INTO card_list (card_id,sub_title) values
+('4178e472-f152-4005-a686-5daed6965522', 'Bubble Sort'),
+('4178e472-f152-4005-a686-5daed6965522', 'Selection dan Merge Sort')
+
+INSERT INTO card_list (card_id,sub_title) values
+('bf504c46-08fc-457e-bb45-7ef7075556c7', 'Penerapan Function'),
+('bf504c46-08fc-457e-bb45-7ef7075556c7', 'Penerapan Class dan Method')
+
+
+select * from card_column_movements;
+select * from card_list where card_id = '4178e472-f152-4005-a686-5daed6965522';
+
+delete from card_column_movements
+where ccm_id = 'd052b44a-676a-4e18-b90f-8bad57ae3a8d'
+
+delete from card_list
+where cl_id = '18e0f4b5-a7c1-4023-a286-f49b7fe76c83'
+
+update card_list
+set start_time_list = null
+where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
+
+update cards
+set notes = null
+where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
+
+select * from users
+
+update card_list
+set end_time_list = null
+where cl_id = 'bbf283d1-fc43-40ad-a55b-1645c2c21dda'

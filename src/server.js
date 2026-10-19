@@ -1,19 +1,34 @@
 require('dotenv').config();
-
-const app = require('./app');
+const express = require('express');
+const bonjour = require('bonjour')();
 const { connectDB } = require('./config/database');
 
+const app = require('./app');
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+
+bonjour.publish({
+  name: 'Gamatutor API',
+  type: 'http',
+  port: 3000,
 });
+
+bonjour.find({ type: 'http' }, (service) => {
+  console.log('Discovered service:', service);})
 
 const startServer = async () => {
   await connectDB();
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+    // Broadcast service via mDNS
+    bonjour.publish({
+      name: 'Gamatutor API',
+      type: 'http',
+      port: PORT,
+      host: require('os').hostname()
+    });
   });
 };
 
