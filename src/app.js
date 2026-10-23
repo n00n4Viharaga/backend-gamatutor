@@ -26,6 +26,7 @@ const llmRecommendationHistoryRoutes = require('./routes/llmRecommendationHistor
 const avatarComponentRoutes = require('./routes/avatarComponentRoutes');
 const userAvatarRoutes = require('./routes/userAvatarRoutes');
 const avatarUnlockRoutes = require('./routes/avatarUnlockRoutes');
+const llmRoutes = require('./routes/llmRouters');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/llm-recommendation-histories', llmRecommendationHistoryRoutes);
 app.use('/api/avatar-components', avatarComponentRoutes);
 app.use('/api/user-avatar', userAvatarRoutes);
 app.use('/api/avatar-unlocks', avatarUnlockRoutes);
+app.use('/api/llmRekomen', llmRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

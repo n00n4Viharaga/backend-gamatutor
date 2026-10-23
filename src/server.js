@@ -6,15 +6,6 @@ const { connectDB } = require('./config/database');
 const app = require('./app');
 const PORT = process.env.PORT || 3000;
 
-bonjour.publish({
-  name: 'Gamatutor API',
-  type: 'http',
-  port: 3000,
-});
-
-bonjour.find({ type: 'http' }, (service) => {
-  console.log('Discovered service:', service);})
-
 const startServer = async () => {
   await connectDB();
 
@@ -22,9 +13,9 @@ const startServer = async () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
-    // Broadcast service via mDNS
+    // Broadcast service via mDNS (publish sekali saja)
     bonjour.publish({
-      name: 'Gamatutor API',
+      name: 'Kanban API',
       type: 'http',
       port: PORT,
       host: require('os').hostname()

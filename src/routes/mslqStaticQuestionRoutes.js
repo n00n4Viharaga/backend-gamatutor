@@ -6,13 +6,15 @@ const { uuidMslqQuestionIdParamValidation, mslqStaticQuestionValidation } = requ
 const router = express.Router();
 
 router.use(authenticate);
-router.use(authorize('admin')); // Only admin can manage static questions
 
-router.post('/', mslqStaticQuestionValidation, create);
+// Endpoint yang bisa diakses oleh semua user yang sudah login (Mahasiswa & Admin) untuk mengambil soal kuis
 router.get('/', getAll);
 router.get('/category/:category', getByCategory);
 router.get('/:id', uuidMslqQuestionIdParamValidation, getById);
-router.put('/:id', uuidMslqQuestionIdParamValidation, mslqStaticQuestionValidation, update);
-router.delete('/:id', uuidMslqQuestionIdParamValidation, remove);
+
+// Endpoint manajemen soal (Hanya Admin yang bisa membuat, mengubah, atau menghapus)
+router.post('/', authorize('admin'), mslqStaticQuestionValidation, create);
+router.put('/:id', authorize('admin'), uuidMslqQuestionIdParamValidation, mslqStaticQuestionValidation, update);
+router.delete('/:id', authorize('admin'), uuidMslqQuestionIdParamValidation, remove);
 
 module.exports = router;

@@ -1,5 +1,4 @@
 
-
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -280,6 +279,7 @@ INSERT INTO learning_strats (key_code, learning_strategy, description) VALUES
 ('help_seeking', 'Help-Seeking', 'Kemampuan meminta bantuan secara efektif saat menemui kesulitan.'),
 ('metacognitive_self_regulation', 'Metacognitive Self-Regulation', 'Merencanakan, memantau, dan menyesuaikan proses berpikir mandiri.'),
 
+
 INSERT INTO llm_prompt_templates (template_name, version, system_prompt, is_active)
 VALUES (
   'mslq_quiz_generator',
@@ -368,7 +368,381 @@ set notes = null
 where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
 
 select * from users
+select * from token
 
 update card_list
 set end_time_list = null
 where cl_id = 'bbf283d1-fc43-40ad-a55b-1645c2c21dda'
+
+INSERT INTO mslq_static_questions (category, question_text, options) VALUES
+-- ═══════════════════════════════════════════════════════
+-- 1. ORGANIZATION (4 soal)
+-- ═══════════════════════════════════════════════════════
+('organization',
+ $q$Kamu harus menghadapi UTS Sistem Operasi. Materinya sangat padat (Process Management, Memory, File System). Apa yang pertama kali kamu lakukan?$q$,
+ $j$[
+   {"text": "Langsung membaca semua slide dari halaman pertama sampai akhir tanpa membuat rangkuman.", "score": 1},
+   {"text": "Membuat mind map atau outline untuk memetakan hubungan antar topik agar lebih mudah dipahami.", "score": 3},
+   {"text": "Membaca materi sambil menandai (highlight) bagian yang penting, tapi tidak menyusunnya ulang.", "score": 2}
+ ]$j$::jsonb),
+
+('organization',
+ $q$Kamu sedang mengerjakan proyek Basis Data. Kamu perlu memahami ERD, Normalisasi, dan Query SQL. Bagaimana caramu mengatur materi ini?$q$,
+ $j$[
+   {"text": "Mempelajari ketiganya secara terpisah karena menurutku itu topik yang berbeda.", "score": 1},
+   {"text": "Membuat tabel perbandingan atau skema yang menghubungkan alur dari ERD ke Normalisasi hingga SQL.", "score": 3},
+   {"text": "Membaca modul praktikum berkali-kali sampai hafal urutan perintah SQL-nya.", "score": 2}
+ ]$j$::jsonb),
+
+('organization',
+ $q$Melihat catatan kuliah Pemrograman Web-mu yang berserakan dan menumpuk di folder Downloads, apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Membiarkannya saja, yang penting file-nya ada dan bisa dicari saat dibutuhkan.", "score": 1},
+   {"text": "Merapikan dan mengelompokkan file ke dalam folder khusus (misal: folder HTML, CSS, PHP) agar mudah diakses.", "score": 3},
+   {"text": "Hanya mengganti nama file agar lebih rapi, tapi tetap menumpuk di satu folder yang sama.", "score": 2}
+ ]$j$::jsonb),
+
+('organization',
+ $q$Besok ada kuis Jaringan Komputer tentang OSI Layer dan TCP/IP. Bagaimana kamu menyiapkan catatanmu?$q$,
+ $j$[
+   {"text": "Membuat ringkasan berupa diagram atau tabel perbandingan antar layer agar mudah dihafal.", "score": 3},
+   {"text": "Membaca ulang seluruh bab dari e-book tanpa membuat ringkasan khusus.", "score": 2},
+   {"text": "Mengandalkan slide dosen saja dan berharap soalnya mudah.", "score": 1}
+ ]$j$::jsonb),
+
+-- ═══════════════════════════════════════════════════════
+-- 2. TIME MANAGEMENT (4 soal)
+-- ═══════════════════════════════════════════════════════
+('time_management',
+ $q$Dalam satu minggu ini, kamu punya deadline Proyek PBO, kuis Matematika Diskrit, dan laporan praktikum Jaringan. Bagaimana strategimu?$q$,
+ $j$[
+   {"text": "Mengerjakan semuanya sekaligus di malam terakhir karena merasa lebih fokus saat dikejar waktu.", "score": 1},
+   {"text": "Menyusun jadwal harian di kalender/aplikasi, memecah tugas besar menjadi target kecil, dan menetapkan waktu istirahat.", "score": 3},
+   {"text": "Mengerjakan yang paling mudah dan menyenangkan dulu, menunda yang sulit sampai mendekati deadline.", "score": 2}
+ ]$j$::jsonb),
+
+('time_management',
+ $q$Laporan praktikum deadline 3 hari lagi, tapi teman-teman mengajak mabar game online malam ini. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Ikut mabar dulu sampai puas, toh besok dan lusa masih ada waktu untuk mengerjakan.", "score": 1},
+   {"text": "Menolak ajakan atau ikut sebentar setelah memastikan target pengerjaan laporan hari ini sudah selesai.", "score": 3},
+   {"text": "Ikut mabar sambil membuka laptop untuk mengerjakan laporan, meskipun pengerjaannya jadi lambat dan tidak fokus.", "score": 2}
+ ]$j$::jsonb),
+
+('time_management',
+ $q$Kamu sadar belakangan ini sering menunda pengerjaan tugas coding karena asyik scrolling TikTok. Apa tindakanmu?$q$,
+ $j$[
+   {"text": "Membatasi waktu bermain HP dengan fitur screen time atau mode fokus saat jam belajar.", "score": 3},
+   {"text": "Menyadari hal itu, tapi tetap membiarkannya karena merasa butuh hiburan setelah lelah kuliah.", "score": 2},
+   {"text": "Mematikan pengingat tugas di HP agar tidak merasa bersalah saat menunda.", "score": 1}
+ ]$j$::jsonb),
+
+('time_management',
+ $q$Kamu merasa jadwal belajarmu sebulan terakhir ini kacau dan tugas selalu mepet. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Mencoba lebih disiplin minggu depan tanpa mengubah jadwal yang sudah ada.", "score": 2},
+   {"text": "Mengevaluasi jam berapa yang paling sering terbuang, lalu menyusun ulang jadwal dan memasang alarm pengingat.", "score": 3},
+   {"text": "Merasa bahwa ini memang gaya belajarku, yang penting tugas tetap terkumpul.", "score": 1}
+ ]$j$::jsonb),
+
+-- ═══════════════════════════════════════════════════════
+-- 3. METACOGNITIVE SELF REGULATION (4 soal)
+-- ═══════════════════════════════════════════════════════
+('metacognitive_self_regulation',
+ $q$Kamu sedang membaca materi Algoritma tentang Rekursi. Tiba-tiba kamu sadar sudah sampai halaman 5, tapi tidak ada satu pun penjelasan yang masuk ke otakmu. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Lanjut membaca saja sampai habis, berharap nanti ada bagian yang membuat semuanya jadi jelas.", "score": 2},
+   {"text": "Menutup buku/modul dan beralih ke mata kuliah lain, nanti akan dijelaskan lagi oleh dosen.", "score": 1},
+   {"text": "Berhenti, mengevaluasi bagian mana yang membingungkan, lalu mencoba cara lain (misal: menonton video tutorial atau menulis alur kodenya di kertas).", "score": 3}
+ ]$j$::jsonb),
+
+('metacognitive_self_regulation',
+ $q$Nilai kuis Pemrograman Web-mu jelek, padahal kamu merasa sudah belajar. Bagaimana responsmu?$q$,
+ $j$[
+   {"text": "Mengecek kembali soal yang salah, mencari tahu penyebabnya (kurang teliti atau tidak paham konsep), dan mencatatnya untuk dipelajari lagi.", "score": 3},
+   {"text": "Merasa kecewa dan bertekad akan belajar lebih keras lagi tanpa tahu bagian mana yang harus diperbaiki.", "score": 2},
+   {"text": "Menganggap soal kuisnya yang aneh dan tidak perlu dipikirkan lagi.", "score": 1}
+ ]$j$::jsonb),
+
+('metacognitive_self_regulation',
+ $q$Saat dosen menjelaskan materi Sistem Operasi, kamu sering tiba-tiba menyadari bahwa pikiranmu melayang ke hal lain. Bagaimana caramu menyikapinya?$q$,
+ $j$[
+   {"text": "Mencoba mencatat poin-poin penting yang sedang dijelaskan untuk memaksa otak kembali fokus.", "score": 3},
+   {"text": "Hanya diam dan berharap materi yang terlewat bisa dipelajari sendiri nanti.", "score": 2},
+   {"text": "Membiarkannya saja karena bosan, lalu memilih membuka media sosial di bawah meja.", "score": 1}
+ ]$j$::jsonb),
+
+('metacognitive_self_regulation',
+ $q$Saat mengerjakan soal ujian pemrograman, kamu sadar logika kodemu berbeda dari prediksi awal dan menyebabkan error. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Panik dan langsung mengosongkan jawaban karena takut salah.", "score": 1},
+   {"text": "Keras kepala memaksa menggunakan cara awal walau sudah tahu hasilnya error.", "score": 2},
+   {"text": "Mengubah pendekatan logika, menyesuaikan strategi pemecahan masalah, dan menguji kode kembali.", "score": 3}
+ ]$j$::jsonb),
+
+-- ═══════════════════════════════════════════════════════
+-- 4. HELP SEEKING (4 soal)
+-- ═══════════════════════════════════════════════════════
+('help_seeking',
+ $q$Kamu sudah stuck 2 jam karena error di kode Python-mu dan tidak tahu penyebabnya. Apa langkahmu?$q$,
+ $j$[
+   {"text": "Langsung menyalin kode teman yang sudah jalan tanpa bertanya kenapa kodenya bisa berhasil.", "score": 1},
+   {"text": "Mencoba debugging mandiri dan mencari di dokumentasi, jika masih buntu baru bertanya ke forum/teman dengan menyertakan detail error-nya.", "score": 3},
+   {"text": "Terus mencoba sendiri berjam-jam dan baru mau bertanya kalau sudah benar-benar frustrasi dan menyerah.", "score": 2}
+ ]$j$::jsonb),
+
+('help_seeking',
+ $q$Kamu masih bingung dengan konsep Deadlock di mata kuliah Sistem Operasi setelah kelas bubar. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Diam saja karena malu atau takut dibilang tidak menyimak, berharap nanti paham sendiri.", "score": 1},
+   {"text": "Bertanya langsung ke dosen/asisten di sesi konsultasi dengan pertanyaan yang spesifik (misal: \"Pak, saya masih bingung di bagian antrean prosesnya\").", "score": 3},
+   {"text": "Bertanya ke teman sekelas yang kelihatan paham, meskipun kadang penjelasannya masih membuatmu bingung.", "score": 2}
+ ]$j$::jsonb),
+
+('help_seeking',
+ $q$Dalam kelompok proyek akhir, ada anggota tim yang sangat jago backend, sementara kamu masih bingung soal API. Bagaimana sikapmu?$q$,
+ $j$[
+   {"text": "Meminta dia untuk mengerjakan semua bagian backend sendirian agar tugas cepat selesai.", "score": 1},
+   {"text": "Menanyakan hal-hal yang benar-benar mendesak saja, tapi lebih sering menyerahkan bagian tersebut padanya.", "score": 2},
+   {"text": "Mengajaknya diskusi atau belajar bareng, minta dijelaskan alurnya, lalu mencoba sendiri dan bertanya lagi jika masih ada yang kurang paham.", "score": 3}
+ ]$j$::jsonb),
+
+('help_seeking',
+ $q$Kamu sedang mengerjakan proyek aplikasi mobile dan menemukan bug yang sangat rumit. Deadline tinggal 3 hari lagi. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Menyembunyikan kesulitan ini karena takut dianggap tidak kompeten, dan terus mencoba sendiri sampai menyerah.", "score": 1},
+   {"text": "Menunggu anggota tim lain sadar akan kesulitanmu dan menawarkan bantuan secara sukarela.", "score": 2},
+   {"text": "Mencoba menganalisis bug terlebih dahulu, mendokumentasikan percobaan yang sudah dilakukan, lalu meminta bantuan anggota tim yang lebih berpengalaman.", "score": 3}
+ ]$j$::jsonb),
+
+-- ═══════════════════════════════════════════════════════
+-- 5. ELABORATION (4 soal)
+-- ═══════════════════════════════════════════════════════
+('elaboration',
+ $q$Kamu sedang belajar konsep Inheritance di PBO. Contoh di slide hanya kelas "Hewan" dan "Kucing". Bagaimana caramu membuat konsep ini lebih nempel?$q$,
+ $j$[
+   {"text": "Menghafal definisinya saja: Inheritance adalah pewarisan sifat, selesai.", "score": 1},
+   {"text": "Membaca ulang contoh di slide dan mengganti nama kelasnya agar terlihat berbeda.", "score": 2},
+   {"text": "Membuat contoh baru dari hal yang kamu kenal, misalnya kelas \"Akun\" dengan turunan \"AkunMahasiswa\" dan \"AkunDosen\" di aplikasi kampus, lalu menulis kodenya.", "score": 3}
+ ]$j$::jsonb),
+
+('elaboration',
+ $q$Minggu ini kamu belajar materi Jaringan Komputer (TCP/UDP), dan minggu lalu kamu belajar model OSI. Bagaimana caramu belajar?$q$,
+ $j$[
+   {"text": "Mempelajari TCP/UDP sebagai topik yang terpisah dan tidak memikirkan hubungannya dengan materi OSI.", "score": 1},
+   {"text": "Membaca materi TCP/UDP dengan baik, tapi tidak mencoba mengaitkannya dengan materi sebelumnya.", "score": 2},
+   {"text": "Menghubungkan materi baru dengan yang lama: mencari tahu TCP/UDP ada di layer mana, bagaimana kerjanya dengan layer di bawahnya, dan mengambil contoh dari pengalaman streaming atau download file.", "score": 3}
+ ]$j$::jsonb),
+
+('elaboration',
+ $q$Kamu diminta membuat ringkasan materi AI (Kecerdasan Buatan) oleh dosen. Bagaimana kamu mengerjakannya?$q$,
+ $j$[
+   {"text": "Menyalin-tempel (copy-paste) teks dari slide ke dokumen tanpa mengubah susunan katanya.", "score": 1},
+   {"text": "Menulis ulang materi menggunakan bahasamu sendiri dan mencoba mengaitkannya dengan materi minggu lalu.", "score": 3},
+   {"text": "Hanya membaca slide dosen dan merasa tidak perlu membuat ringkasan karena materinya sudah ada.", "score": 2}
+ ]$j$::jsonb),
+
+('elaboration',
+ $q$Kamu sedang belajar materi Keamanan Informasi tentang Hashing dan Encryption. Keduanya terlihat mirip. Bagaimana kamu memperdalam pemahamanmu?$q$,
+ $j$[
+   {"text": "Menghafal definisi keduanya secara terpisah tanpa mencari tahu perbedaannya.", "score": 1},
+   {"text": "Membaca ulang definisi dan melihat contohnya, tapi belum mencoba menjelaskannya dengan bahasamu sendiri.", "score": 2},
+   {"text": "Membandingkan tujuan, proses, dan hasilnya, lalu membuat analogi atau contoh nyata (misal: hashing untuk password, encryption untuk pesan chat).", "score": 3}
+ ]$j$::jsonb),
+
+-- ═══════════════════════════════════════════════════════
+-- 6. REHEARSAL (4 soal)
+-- ═══════════════════════════════════════════════════════
+('rehearsal',
+ $q$Kamu harus menghafal banyak perintah Git (commit, push, merge, rebase) untuk praktikum. Bagaimana caramu menghafalnya?$q$,
+ $j$[
+   {"text": "Membuat flashcard atau catatan kecil, lalu berlatih mengetik perintahnya langsung di terminal berulang-ulang.", "score": 3},
+   {"text": "Membaca daftar perintahnya beberapa kali sampai merasa hafal.", "score": 2},
+   {"text": "Tidak menghafal, nanti juga bisa cari di Google saat dibutuhkan.", "score": 1}
+ ]$j$::jsonb),
+
+('rehearsal',
+ $q$UTS Jaringan Komputer minggu depan dan ada banyak istilah serta nomor port yang wajib dihafal. Bagaimana strategimu?$q$,
+ $j$[
+   {"text": "Belajar hanya di malam sebelum ujian dengan membaca catatan secepat mungkin.", "score": 2},
+   {"text": "Membagi hafalan menjadi sesi pendek setiap hari, lalu menguji diri sendiri menggunakan kuis atau flashcard tanpa melihat catatan.", "score": 3},
+   {"text": "Tidak terlalu menghafal, yang penting paham garis besarnya. Kalau lupa ya sudah.", "score": 1}
+ ]$j$::jsonb),
+
+('rehearsal',
+ $q$H-1 ujian, kamu ingin memantapkan hafalan materi yang sudah dipelajari seminggu ini. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Membaca ulang seluruh catatan dari awal sampai akhir satu kali.", "score": 2},
+   {"text": "Memilih tidur lebih awal dan berharap yang sudah dipelajari kemarin masih ingat.", "score": 1},
+   {"text": "Menutup catatan, mencoba menuliskan ulang materi inti dari ingatan, lalu mengecek catatan untuk melihat bagian mana yang masih lupa.", "score": 3}
+ ]$j$::jsonb),
+
+('rehearsal',
+ $q$Kamu ingin mengingat sintaks dasar Python (perulangan, percabangan, fungsi) untuk kuis besok. Kamu sudah membacanya, tapi masih sering lupa. Apa yang kamu lakukan?$q$,
+ $j$[
+   {"text": "Hanya membaca dan menyalin contoh sintaks dari modul berulang kali tanpa mencoba menulisnya tanpa melihat.", "score": 2},
+   {"text": "Mencoba menuliskan kembali sintaks tersebut dari ingatan, lalu mengecek modul untuk memperbaiki bagian yang salah.", "score": 3},
+   {"text": "Berhenti mengulang dan beralih ke materi lain karena merasa sudah pernah membacanya.", "score": 1}
+ ]$j$::jsonb);
+ 
+select * from users;
+select * from user_quiz_results where user_id = '57a5522d-ff32-4259-b4de-c51555698bab';
+
+update user_quiz_results
+set unlocked_features = '["time_management"]'
+where user_id = '57a5522d-ff32-4259-b4de-c51555698bab'
+
+delete from user_quiz_results
+where user_id = '57a5522d-ff32-4259-b4de-c51555698bab'
+
+SELECT category, COUNT(*) AS jumlah
+FROM mslq_static_questions
+GROUP BY category
+ORDER BY category;
+
+SELECT
+    static_q_id,
+    category,
+    jsonb_array_length(options) AS jumlah_opsi,
+    (SELECT array_agg((opt->>'score')::int ORDER BY (opt->>'score')::int DESC)
+     FROM jsonb_array_elements(options) AS opt) AS daftar_skor
+FROM mslq_static_questions
+ORDER BY static_q_id;
+
+SELECT question_text, COUNT(*) AS kemunculan
+FROM mslq_static_questions
+GROUP BY question_text
+HAVING COUNT(*) > 1;
+
+SELECT static_q_id, category
+FROM mslq_static_questions
+WHERE NOT (
+    SELECT bool_and(opt ? 'text' AND opt ? 'score')
+    FROM jsonb_array_elements(options) AS opt
+);
+
+-- ─── users ───
+-- email & username sudah ada UNIQUE constraint (otomatis index), aman.
+
+-- ─── token ───
+CREATE INDEX idx_token_user_id       ON token (user_id);
+CREATE INDEX idx_token_access_token  ON token (access_token);   -- untuk validasi JWT/access token tiap request
+
+-- ─── user_quiz_results ───
+CREATE INDEX idx_quiz_results_user_id      ON user_quiz_results (user_id);
+CREATE INDEX idx_quiz_results_user_created ON user_quiz_results (user_id, created_at DESC); -- ambil hasil terbaru
+
+-- ─── monthly_evaluations ───
+-- UNIQUE(user_id, month_year) sudah otomatis index, cukup.
+
+-- ─── cards ───
+CREATE INDEX idx_cards_user_id      ON cards (user_id);
+CREATE INDEX idx_cards_learning_id  ON cards (learning_id);
+
+-- ─── card_list ───
+CREATE INDEX idx_card_list_card_id_in  ON card_list (card_id);
+
+-- ─── card_column_movements ───
+CREATE INDEX idx_ccm_card_id        ON card_column_movements (card_id);
+CREATE INDEX idx_ccm_card_timestamp ON card_column_movements (card_id, timestamp DESC);
+
+-- ─── friendships ───
+CREATE INDEX idx_friendships_friend_id ON friendships (friend_id);  -- user_id sudah jadi bagian UNIQUE(user_id, friend_id)
+-- ↑ WAJIB: tanpa ini, query "siapa saja yang mem-friend aku?" akan sequential scan
+
+-- ─── chat ───
+CREATE INDEX idx_chat_user_id     ON chat (user_id);
+CREATE INDEX idx_chat_friend_id   ON chat (friend_id);
+CREATE INDEX idx_chat_pair_time   ON chat (user_id, friend_id, time_chat DESC); -- history percakapan
+
+-- ─── card_list_collab ───
+CREATE INDEX idx_collab_card_id ON card_list_collab (card_id);
+-- UNIQUE(card_id, user_id) sudah otomatis index untuk lookup user_id.
+
+-- ─── card_list_chat ───
+CREATE INDEX idx_card_list_chat_collab_id ON card_list_chat (collab_id);
+CREATE INDEX idx_card_list_chat_user_id   ON card_list_chat (user_id);
+
+-- ─── user_activity_logs ───
+CREATE INDEX idx_activity_logs_user_id     ON user_activity_logs (user_id);
+CREATE INDEX idx_activity_logs_user_time   ON user_activity_logs (user_id, created_at DESC);
+
+-- ─── llm_recommendation_histories ───
+CREATE INDEX idx_llm_rec_user_id      ON llm_recommendation_histories (user_id);
+CREATE INDEX idx_llm_rec_user_created ON llm_recommendation_histories (user_id, created_at DESC);
+
+-- ─── avatar_unlocks ───
+CREATE INDEX idx_avatar_unlocks_user_id ON avatar_unlocks (user_id);
+-- UNIQUE(user_id, component_id) sudah otomatis index untuk component_id lookup? TIDAK — perlu:
+CREATE INDEX idx_avatar_unlocks_component_id ON avatar_unlocks (component_id);
+
+-- ─── notifications ───
+CREATE INDEX idx_notif_user_id       ON notifications (user_id);
+CREATE INDEX idx_notif_user_unread   ON notifications (user_id, read) WHERE read = FALSE; -- badge count
+CREATE INDEX idx_notif_scheduled     ON notifications (scheduled_for) WHERE delivered = FALSE; -- job scheduler
+
+-- ─── Filter kartu aktif (soft delete) ───
+-- Partial index HANYA mengindeks baris deleted=false → ukuran lebih kecil & cepat
+CREATE INDEX idx_cards_user_active ON cards (user_id, deadline)
+    WHERE deleted = FALSE;
+
+-- ─── Filter kartu by priority / difficulty ───
+CREATE INDEX idx_cards_user_priority ON cards (user_id, priority)
+    WHERE deleted = FALSE;
+CREATE INDEX idx_cards_user_difficulty ON cards (user_id, difficulty)
+    WHERE deleted = FALSE;
+
+-- ─── Deadline alert / reminder job ───
+CREATE INDEX idx_cards_deadline_upcoming ON cards (deadline)
+    WHERE deleted = FALSE AND deadline IS NOT NULL;
+
+-- ─── Chat unread status ───
+CREATE INDEX idx_chat_unread ON chat (friend_id, time_chat DESC)
+    WHERE status = 'delivered';
+
+-- ─── Friendship pending request ───
+CREATE INDEX idx_friendships_pending ON friendships (friend_id)
+    WHERE status = 'pending';
+
+-- ─── Activity log by type (analitik MSLQ) ───
+CREATE INDEX idx_activity_logs_type ON user_activity_logs (activity_type, created_at DESC);
+
+-- ─── Log harian untuk evaluasi bulanan (biasanya filter 30 hari terakhir) ───
+CREATE INDEX idx_activity_logs_recent ON user_activity_logs (user_id, created_at DESC);
+-- ↑ jika data sangat besar; kalau tidak, cukup idx_activity_logs_user_time di atas.
+
+-- ─── Notifikasi yang belum dibaca untuk push ───
+CREATE INDEX idx_notif_undelivered ON notifications (scheduled_for)
+    WHERE delivered = FALSE AND scheduled_for IS NOT NULL;
+
+-- user_quiz_results.unlocked_features — jika sering query "user yang punya feature X"
+CREATE INDEX idx_quiz_unlocked_features_gin ON user_quiz_results USING GIN (unlocked_features);
+
+-- monthly_evaluations.detected_issues — jika analitik perlu filter issue tertentu
+CREATE INDEX idx_eval_detected_issues_gin ON monthly_evaluations USING GIN (detected_issues);
+
+-- user_activity_logs.metadata — jika butuh analitik event tertentu
+CREATE INDEX idx_activity_metadata_gin ON user_activity_logs USING GIN (metadata);
+
+-- mslq_static_questions.options — jika butuh filter opsi tertentu
+CREATE INDEX idx_mslq_options_gin ON mslq_static_questions USING GIN (options);
+
+-- llm_recommendation_histories.llm_output — untuk audit/replay
+CREATE INDEX idx_llm_output_gin ON llm_recommendation_histories USING GIN (llm_output);
+
+CREATE INDEX idx_activity_logs_created_brin ON user_activity_logs USING BRIN (created_at);
+CREATE INDEX idx_chat_time_brin             ON chat USING BRIN (time_chat);
+CREATE INDEX idx_notif_created_brin         ON notifications USING BRIN (created_at);
+
+CREATE INDEX idx_cards_user_active_cover
+    ON cards (user_id, deadline)
+    INCLUDE (title, priority, difficulty)
+    WHERE deleted = FALSE;
+
+-- ─── llm_prompt_templates ───
+-- template_name sudah UNIQUE, aman.
+CREATE INDEX idx_llm_prompt_active ON llm_prompt_templates (template_name)
+    WHERE is_active = TRUE;
+
+-- ─── mslq_static_questions ───
+CREATE INDEX idx_mslq_static_category ON mslq_static_questions (category);

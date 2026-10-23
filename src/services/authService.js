@@ -18,11 +18,11 @@ const register = async ({ email, password, firstName, lastName, username, role, 
   }
 
   const finalUsername = username || email.split('@')[0];
- 
+
   const user = await User.create({
     email: email,
     password: password,
-    firstName : firstName, 
+    firstName: firstName,
     lastName: lastName,
     username: finalUsername,
     role: role || 'user',
@@ -57,6 +57,25 @@ const login = async (email, password) => {
   const jwtToken = generateToken(user);
 
   // Store token in token table
+  await Token.create({
+    userId: user.userId,
+    accessToken: jwtToken,
+    accessTokenExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  });
+
+  return { user, token: jwtToken };
+};
+
+const loginGoogle = async (email) => {
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new AppError('User not registered', 404);
+  }
+
+  await user.update({ status: 'online' });
+
+  const jwtToken = generateToken(user);
+
   await Token.create({
     userId: user.userId,
     accessToken: jwtToken,
@@ -151,4 +170,4 @@ const resetPassword = async (resetToken, newPassword) => {
   return { message: 'Password reset successful' };
 };
 
-module.exports = { register, login, getMe, generateToken, logout, refresh, forgotPassword, resetPassword };
+module.exports = { register, login, loginGoogle, getMe, generateToken, logout, refresh, forgotPassword, resetPassword };

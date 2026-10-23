@@ -117,12 +117,16 @@ const mslqStaticQuestionValidation = [
 ];
 
 const userQuizResultValidation = [
-  body('dominantStrategy').notEmpty().withMessage('Dominant strategy required'),
-  body('userProfile').notEmpty().withMessage('User profile required'),
-  body('unlockedFeatures').isArray().withMessage('Unlocked features must be array'),
-  body('lockedFeatures').isArray().withMessage('Locked features must be array'),
-  body('answersPayload').isObject().withMessage('Answers payload must be object'),
-  handleValidationErrors
+  body('answersPayload')
+    .exists()
+    .withMessage('Answers payload required'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
 ];
 
 const monthlyEvaluationValidation = [

@@ -1,9 +1,10 @@
 const { 
-  LlMRecommendationHistory, 
-  LlMPromptTemplate, 
+  LLMRecommendationHistory, 
+  LLMPromptTemplate, 
   UserQuizResult, 
   MonthlyEvaluation, 
-  EvalStrat 
+  EvalStrat,
+  User 
 } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
