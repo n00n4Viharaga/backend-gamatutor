@@ -91,6 +91,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       field: 'archived'
     },
+    xp: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue:0
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

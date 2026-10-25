@@ -1,12 +1,18 @@
-const {
-  createMonthlyEvaluation,
-  getAllMonthlyEvaluations,
-  getMonthlyEvaluationById,
-  getMonthlyEvaluationsByUser,
-  getMonthlyEvaluationByUserAndMonth,
-  updateMonthlyEvaluation,
-  deleteMonthlyEvaluation
-} = require('../services/monthlyEvaluationService');
+const monthlyEvalService = require('../services/monthlyEvaluationService');
+
+const ckStatus = async (req, res) => {
+  try {
+    const result = await monthlyEvalService.checkAndGenerate(req.user.id); // req.user dari middleware auth
+    res.json(result);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
+const reflect = async (req, res) => {
+  try {
+    const result = await monthlyEvalService.submitReflection(req.user.id, req.body.monthYear, req.body.userReason);
+    res.json(result);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
 
 const create = async (req, res, next) => {
   try {
@@ -86,4 +92,4 @@ const remove = async (req, res, next) => {
   }
 };
 
-module.exports = { create, getAll, getById, getByUser, getByUserAndMonth, update, remove };
+module.exports = { create, getAll, getById, getByUser, getByUserAndMonth, update, remove, ckStatus, reflect };

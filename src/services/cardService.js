@@ -132,37 +132,31 @@ const deleteCard = async (cardId, userId) => {
 };
 
 const getUserCards = async (userId, filters = {}) => {
-  try {
-    const where = { userId };
-    return Card.findAll({
-      where,
-      include: [
-        { model: LearningStrat, as: 'learningStrat' },
-        {
-          model: CardList,
-          as: 'cardList',
-          separate: true
-        },
-        {
-          model: ColumnMovement,
-          as: 'columnMovements',
-          separate: true,
-          order: [['timestamp', 'ASC']]
-        },
-        {
-          model: CardListCollab,
-          as: 'collaborations',
-          separate: true,
-          include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }]
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-    return res.status(200).json({ cards });
-  }
-  catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const where = { userId };
+  return Card.findAll({
+    where,
+    include: [
+      { model: LearningStrat, as: 'learningStrat' },
+      {
+        model: CardList,
+        as: 'cardList',
+        separate: true
+      },
+      {
+        model: ColumnMovement,
+        as: 'columnMovements',
+        separate: true,
+        order: [['timestamp', 'ASC']]
+      },
+      {
+        model: CardListCollab,
+        as: 'collaborations',
+        separate: true,
+        include: [{ model: User, as: 'user', attributes: ['userId', 'firstName', 'lastName', 'username'] }]
+      }
+    ],
+    order: [['createdAt', 'DESC']]
+  });
 };
 
 module.exports = { createCard, getCardById, updateCard, deleteCard, getUserCards };

@@ -23,9 +23,7 @@ const cardListCollabRoutes = require('./routes/cardListCollabRoutes');
 const cardListChatRoutes = require('./routes/cardListChatRoutes');
 const userActivityLogRoutes = require('./routes/userActivityLogRoutes');
 const llmRecommendationHistoryRoutes = require('./routes/llmRecommendationHistoryRoutes');
-const avatarComponentRoutes = require('./routes/avatarComponentRoutes');
 const userAvatarRoutes = require('./routes/userAvatarRoutes');
-const avatarUnlockRoutes = require('./routes/avatarUnlockRoutes');
 const llmRoutes = require('./routes/llmRouters');
 const { errorHandler } = require('./middleware/errorHandler');
 
@@ -58,9 +56,7 @@ app.use('/api/card-list-collab', cardListCollabRoutes);
 app.use('/api/card-list-chat', cardListChatRoutes);
 app.use('/api/user-activity-logs', userActivityLogRoutes);
 app.use('/api/llm-recommendation-histories', llmRecommendationHistoryRoutes);
-app.use('/api/avatar-components', avatarComponentRoutes);
 app.use('/api/user-avatar', userAvatarRoutes);
-app.use('/api/avatar-unlocks', avatarUnlockRoutes);
 app.use('/api/llmRekomen', llmRoutes);
 
 app.use((req, res) => {

@@ -5,11 +5,6 @@ module.exports = (sequelize, DataTypes) => {
   class UserAvatar extends Model {
     static associate(models) {
       UserAvatar.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-      UserAvatar.belongsTo(models.AvatarComponent, { foreignKey: 'hairId', as: 'hair' });
-      UserAvatar.belongsTo(models.AvatarComponent, { foreignKey: 'faceId', as: 'face' });
-      UserAvatar.belongsTo(models.AvatarComponent, { foreignKey: 'shirtId', as: 'shirt' });
-      UserAvatar.belongsTo(models.AvatarComponent, { foreignKey: 'pantsId', as: 'pants' });
-      UserAvatar.belongsTo(models.AvatarComponent, { foreignKey: 'specialId', as: 'special' });
     }
   }
 
@@ -20,35 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       references: { model: 'users', key: 'user_id' },
       field: 'user_id'
     },
-    hairId: {
-      type: DataTypes.UUID,
+    avatarConfig: {
+      type: DataTypes.JSONB,
       allowNull: true,
-      references: { model: 'avatar_components', key: 'ava_id' },
-      field: 'hair_id'
-    },
-    faceId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'avatar_components', key: 'ava_id' },
-      field: 'face_id'
-    },
-    shirtId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'avatar_components', key: 'ava_id' },
-      field: 'shirt_id'
-    },
-    pantsId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'avatar_components', key: 'ava_id' },
-      field: 'pants_id'
-    },
-    specialId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'avatar_components', key: 'ava_id' },
-      field: 'special_id'
+      field: 'avatar_config'
     },
     updatedAt: {
       type: DataTypes.DATE,

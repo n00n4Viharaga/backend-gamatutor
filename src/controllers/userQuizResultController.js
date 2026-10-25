@@ -16,7 +16,7 @@ const create = async (req, res, next) => {
       return res.status(400).json({ error: 'Field "answers" wajib diisi.' });
     }
 
-    const result = await createQuizResult(req.user.userId, req.body);
+    const result = await createQuizResult(req.user.userId, answers);
     res.status(201).json({ quizResult: result });
   } catch (error) {
     next(error);

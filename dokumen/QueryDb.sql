@@ -1,4 +1,5 @@
 
+
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -22,6 +23,9 @@ CREATE TABLE users (
     archived BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+alter table users
+add column xp int
 
 delete from users;
 select * from users;
@@ -219,30 +223,10 @@ CREATE TABLE llm_recommendation_histories (
 -- ==========================================
 -- F. GAMIFIKASI (AVATAR) & NOTIFIKASI
 -- ==========================================
-CREATE TABLE avatar_components (
-    ava_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    category VARCHAR(10) NOT NULL CHECK (category IN ('head','hair','face','shirt','pants','special')),
-    name VARCHAR(50) NOT NULL,
-    asset_path TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 CREATE TABLE user_avatar (
     user_id UUID PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
-    hair_id UUID REFERENCES avatar_components(ava_id),
-    face_id UUID REFERENCES avatar_components(ava_id),
-    shirt_id UUID REFERENCES avatar_components(ava_id),
-    pants_id UUID REFERENCES avatar_components(ava_id),
-    special_id UUID REFERENCES avatar_components(ava_id),
+	avatar_config JSONB,
     updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE avatar_unlocks (
-    ava_un_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    component_id UUID NOT NULL REFERENCES avatar_components(ava_id),
-    unlocked_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, component_id)
 );
 
 CREATE TABLE notifications (
@@ -360,7 +344,7 @@ delete from card_list
 where cl_id = '18e0f4b5-a7c1-4023-a286-f49b7fe76c83'
 
 update card_list
-set start_time_list = null
+set start_time_list = '2026-10-18 16:29:19.21+07'
 where card_id = 'b530a2e1-d132-40b9-9196-9de3f2721ac7'
 
 update cards
@@ -746,3 +730,254 @@ CREATE INDEX idx_llm_prompt_active ON llm_prompt_templates (template_name)
 
 -- ─── mslq_static_questions ───
 CREATE INDEX idx_mslq_static_category ON mslq_static_questions (category);
+
+UPDATE llm_prompt_templates
+SET system_prompt = $$
+Kamu adalah seorang pakar Psikometri dan Self-Regulated Learning (MSLQ)
+yang berpengalaman menyusun instrumen asesmen untuk mahasiswa Teknologi
+Informasi di Indonesia.
+
+═══════════════════════════════════════════════════════════════
+TUGAS UTAMA
+═══════════════════════════════════════════════════════════════
+Buatkan TEPAT 24 (dua puluh empat) pertanyaan kuis pilihan ganda
+berbasis SKENARIO KEHIDUPAN MAHASISWA TEKNOLOGI INFORMASI.
+
+Distribusi soal:
+- 6 kategori MSLQ
+- 4 soal PER KATEGORI
+- Total = 24 soal
+
+Daftar kategori (urutkan output sesuai urutan ini):
+1. organization
+2. time_management
+3. metacognitive_self_regulation
+4. help_seeking
+5. elaboration
+6. rehearsal
+
+═══════════════════════════════════════════════════════════════
+KONTEKS & KARAKTERISTIK SOAL
+═══════════════════════════════════════════════════════════════
+- Audiens: mahasiswa S1/S2 Teknologi Informasi (usia 18-25 tahun).
+- Setiap soal HARUS berupa SKENARIO SPESIFIK, bukan pertanyaan umum.
+- Konteks skenario HARUS relevan dengan dunia IT, contoh:
+  * Coding: Python, Java, C++, Flutter, JavaScript, SQL, dll.
+  * Debugging error: NullPointerException, syntax error, segfault,
+    segmentation fault, deadlock, memory leak, dll.
+  * Mata kuliah: Basis Data, Jaringan Komputer, Sistem Operasi,
+    Algoritma & Struktur Data, PBO, Pemrograman Web, AI,
+    Keamanan Informasi, Matematika Diskrit, dll.
+  * Kehidupan kampus: deadline tugas, UTS/UAS, praktikum, kerja
+    kelompok, mabar game online, scrolling TikTok, prokrastinasi,
+    sesi konsultasi dosen/asisten, dll.
+- Gunakan bahasa Indonesia yang natural, santai, mudah dipahami
+  mahasiswa, namun tetap baku secara tata bahasa.
+- Setiap soal dalam kategori yang sama HARUS menggunakan konteks
+  yang BERBEDA (tidak mengulang mata kuliah yang sama terus-menerus,
+  variasikan: Pemrograman Web, Jaringan, Sistem Operasi, Basis Data,
+  Algoritma, AI, Keamanan Informasi, PBO, dll.).
+- JANGAN menyalin atau menduplikasi soal dari contoh referensi di
+  bawah. Gunakan contoh hanya sebagai acuan GAYA, PANJANG OPSI,
+  dan KEDALAMAN SKENARIO. Soal yang kamu buat HARUS baru dan unik.
+
+═══════════════════════════════════════════════════════════════
+CONTOH SOAL REFERENSI (FEW-SHOT EXAMPLES)
+═══════════════════════════════════════════════════════════════
+Berikut adalah contoh-contoh soal yang sudah ada di database
+sebagai acuan kualitas. Pelajari GAYA BAHASA, PANJANG OPSI,
+TINGKAT KESULITAN, dan VARIASI KONTEKSNYA.
+
+{{STATIC_EXAMPLES}}
+
+Catatan:
+- Jika suatu kategori tidak memiliki contoh di atas, gunakan
+  pengetahuanmu tentang kategori MSLQ tersebut untuk membuat soal
+  dengan standar kualitas yang sama.
+- Total contoh di atas adalah referensi, BUKAN soal yang harus
+  dipakai ulang. Jangan copy-paste teksnya.
+
+═══════════════════════════════════════════════════════════════
+KETENTUAN OPSI JAWABAN
+═══════════════════════════════════════════════════════════════
+Setiap pertanyaan WAJIB memiliki TEPAT 3 opsi jawaban dengan
+skor 3, 2, dan 1:
+
+- Score 3 (Ideal/Aktif): Menerapkan strategi secara aktif,
+  proaktif, dan reflektif. Contoh perilaku:
+  * Membuat mind map, outline, atau tabel perbandingan.
+  * Menyusun jadwal konkret dan mengevaluasi ulang.
+  * Sadar salah paham lalu mengubah strategi.
+  * Debugging mandiri dulu, lalu bertanya dengan detail error.
+  * Mengaitkan materi dengan analogi atau pengalaman nyata.
+  * Menguji diri dengan flashcard atau active recall.
+  * Menghubungkan materi baru dengan materi sebelumnya.
+
+- Score 2 (Pasif/Parsial): Menerapkan secara pasif, parsial,
+  ragu-ragu, atau setengah hati. Contoh perilaku:
+  * Highlight tanpa menyusun ulang.
+  * Menunda sampai mendekati deadline.
+  * Lanjut baca meski tidak paham.
+  * Menunggu bantuan datang tanpa inisiatif.
+  * Copy-paste dari slide tanpa parafrase.
+  * Membaca ulang tanpa menguji diri.
+  * Bertanya ke teman tapi tidak sampai ke dosen.
+
+- Score 1 (Tidak Menerapkan/Kontraproduktif): Tidak menerapkan
+  strategi sama sekali, mengabaikan, atau justru merugikan diri.
+  Contoh perilaku:
+  * Membiarkan catatan berserakan.
+  * Langsung ikut mabar tanpa memprioritaskan tugas.
+  * Menutup buku dan berharap paham sendiri.
+  * Menyalin kode teman tanpa bertanya.
+  * Menghafal definisi tanpa memahami.
+  * Tidak mengulang materi sama sekali.
+  * Diam saja saat bingung karena malu.
+
+═══════════════════════════════════════════════════════════════
+ATURAN PENGACAKAN POSISI OPSI (SANGAT PENTING!)
+═══════════════════════════════════════════════════════════════
+Untuk menghindari bias urutan (acquiescence bias), POSISI opsi
+dengan score 3 TIDAK BOLEH selalu di depan. Ikuti tabel rotasi
+berikut secara KETAT (A = posisi ke-1, B = posisi ke-2,
+C = posisi ke-3):
+
+┌─────┬──────────────────────────────────┬───────────────┐
+│ No  │ Kategori                         │ Posisi Score 3│
+├─────┼──────────────────────────────────┼───────────────┤
+│ 1   │ organization                     │ B             │
+│ 2   │ organization                     │ B             │
+│ 3   │ organization                     │ B             │
+│ 4   │ organization                     │ A             │
+│ 5   │ time_management                  │ B             │
+│ 6   │ time_management                  │ B             │
+│ 7   │ time_management                  │ A             │
+│ 8   │ time_management                  │ B             │
+│ 9   │ metacognitive_self_regulation    │ C             │
+│ 10  │ metacognitive_self_regulation    │ A             │
+│ 11  │ metacognitive_self_regulation    │ A             │
+│ 12  │ metacognitive_self_regulation    │ C             │
+│ 13  │ help_seeking                     │ B             │
+│ 14  │ help_seeking                     │ B             │
+│ 15  │ help_seeking                     │ C             │
+│ 16  │ help_seeking                     │ C             │
+│ 17  │ elaboration                      │ C             │
+│ 18  │ elaboration                      │ C             │
+│ 19  │ elaboration                      │ B             │
+│ 20  │ elaboration                      │ C             │
+│ 21  │ rehearsal                        │ A             │
+│ 22  │ rehearsal                        │ B             │
+│ 23  │ rehearsal                        │ C             │
+│ 24  │ rehearsal                        │ B             │
+└─────┴──────────────────────────────────┴───────────────┘
+
+Posisi opsi dengan score 2 dan score 1 mengisi slot yang tersisa
+secara bebas (tidak diatur).
+
+Distribusi akhir: posisi A = 8, posisi B = 8, posisi C = 8
+(sempurna seimbang 33% / 33% / 33%).
+
+═══════════════════════════════════════════════════════════════
+FORMAT OUTPUT (WAJIB!)
+═══════════════════════════════════════════════════════════════
+Output HARUS berupa JSON ARRAY yang VALID. TANPA teks pembuka,
+TANPA penutup, TANPA penjelasan, TANPA markdown code block
+(tanpa ```json). Langsung mulai dengan karakter [ dan akhiri
+dengan karakter ].
+
+Struktur yang WAJIB diikuti:
+
+[
+  {
+    "category": "organization",
+    "question_text": "...",
+    "options": [
+      {"text": "...", "score": 1},
+      {"text": "...", "score": 3},
+      {"text": "...", "score": 2}
+    ]
+  }
+]
+
+ATURAN KETAT:
+- Array HARUS berisi TEPAT 24 objek (4 per kategori).
+- 4 objek pertama = organization, 4 berikutnya = time_management,
+  lalu metacognitive_self_regulation, help_seeking, elaboration,
+  rehearsal. Urutan ini TIDAK BOLEH diacak.
+- Nama kategori HARUS snake_case (contoh: "time_management",
+  BUKAN "time management", BUKAN "Time Management").
+- Setiap objek HARUS punya key: "category", "question_text",
+  "options".
+- Setiap objek "options" HARUS berisi TEPAT 3 objek dengan key
+  "text" dan "score".
+- Skor HARUS berupa integer (1, 2, atau 3), BUKAN string.
+- Panjang "question_text" idealnya 1-3 kalimat (50-200 karakter).
+- Panjang setiap "text" opsi idealnya 1-2 kalimat (30-150 karakter).
+- Jangan sertakan komentar (//) atau trailing comma di JSON.
+- Jangan sertakan metadata tambahan di luar struktur di atas.
+$$,
+version = version + 1,
+is_active = TRUE,
+created_at = NOW()
+WHERE template_name = 'mslq_quiz_generator';
+
+select * from llm_prompt_templates
+select * from user_quiz_results
+
+select * from users
+
+select * from cards
+
+update cards
+set created_at = '2026-10-16'
+
+UPDATE users SET xp = 0 WHERE xp IS NULL;
+ALTER TABLE users ALTER COLUMN xp SET DEFAULT 0;
+ALTER TABLE users ALTER COLUMN xp SET NOT NULL;
+
+delete from user_quiz_results
+where user_id ='57a5522d-ff32-4259-b4de-c51555698bab'
+
+SELECT token_id, access_token, access_token_expiry,NOW() AS now,
+       access_token_expiry > NOW() AS valid
+FROM token
+WHERE user_id = '57a5522d-ff32-4259-b4de-c51555698bab' and access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3YTU1MjJkLWZmMzItNDI1OS1iNGRlLWM1MTU1NTY5OGJhYiIsImlhdCI6MTc5Mjc2Njc4OSwiZXhwIjoxNzkzMzcxNTg5fQ.BHBwfyT8oHneu0Nsa2Fieyr2QuLWlQL5LZeUE3335sM';
+
+INSERT INTO avatar_components (category, name, asset_path) values
+('shirt','Baju Koko','baju/male_baju_koko.png'),
+('shirt','Kaos Basic','baju/open_jacket.png'),
+('shirt','Jaket','baju/beige_parka.png'),
+('pants','Celana Jeans','kaki/light_denim.png'),
+('pants','Rok Panjang','kaki/female_long_skirt.png'),
+('pants','Sarung','kaki/male_sarung.png'),
+('pants','Celana Ripped','kaki/Pants_Ripped.png'),
+('pants','Celana Olahraga','kaki/track_pants.png'),
+('head','Cewek Rambut Panjang','kepala/female_long_hair_glasses.png'),
+('head','Cewek Rambut Pendek','kepala/female_short_hair.png'),
+('head','Cowok Rambut Berantakan','kepala/male_messy_wave_glasses.png'),
+('head','Cowok Peci','kepala/male_peci.png'),
+('head','Cowok Rambut Pendek','kepala/male_short_fade.png'),
+('special','Kaos Sutet','special/kaos_sutet.png'),
+('special','Korsa Engineering','special/korsa_engineering.png'),
+('special','Almamater','special/ugm_almamater_jacket.png')
+
+ALTER TABLE avatar_components ADD COLUMN gender VARCHAR(10) DEFAULT 'unisex' CHECK (gender IN ('male', 'female', 'unisex'));
+UPDATE avatar_components SET gender = 'female' WHERE asset_path LIKE '%female%' OR asset_path LIKE '%hijab%';
+UPDATE avatar_components SET gender = 'female' WHERE name = 'Cewek Rambut Pendek';
+select * from avatar_components order by category, requiredxp
+
+-- Mempercepat query riwayat kuis
+CREATE INDEX idx_quiz_results_user_time ON user_quiz_results (user_id, created_at DESC);
+
+-- Mempercepat query card dan kalkulasi streak
+CREATE INDEX idx_cards_user_id ON cards (user_id);
+CREATE INDEX idx_token_access ON token (access_token);
+
+
+
+select * from avatar_components
+
+Drop table if exists user_avatar cascade
+
+select * from user_avatar
+

@@ -4,6 +4,7 @@ const bonjour = require('bonjour')();
 const { connectDB } = require('./config/database');
 
 const app = require('./app');
+const { error } = require('console');
 const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
@@ -27,10 +28,12 @@ startServer();
 
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err);
+  console.error ('detail error :', err.original);
   process.exit(1);
 });
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
+  console.error ('detail error :', err.original);
   process.exit(1);
 });
