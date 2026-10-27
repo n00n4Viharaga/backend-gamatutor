@@ -1,5 +1,6 @@
 
 
+
 -- 1. INISIALISASI EXTENSION
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -981,3 +982,110 @@ Drop table if exists user_avatar cascade
 
 select * from user_avatar
 
+DROP INDEX IF EXISTS idx_cards_user_active;
+DROP INDEX IF EXISTS idx_cards_deadline;
+
+select * from card_list;
+
+WITH ranked AS (
+      SELECT static_q_id, category, question_text, options,
+             ROW_NUMBER() OVER (PARTITION BY category ORDER BY RANDOM()) AS rn
+      FROM mslq_static_questions
+    )
+    SELECT static_q_id, category, question_text, options
+    FROM ranked WHERE rn <= 4 ORDER BY RANDOM()
+	
+select * from users
+
+-- GamaTutor Micro-Goals ("Cek Pemahaman") - skema database
+-- Versi PostgreSQL. Di proyek ini tabel dibuat otomatis oleh Sequelize (backend/src/models.js);
+-- berkas ini hanya padanan SQL-nya untuk dibaca atau dijalankan manual.
+--
+-- Catatan desain:
+--   * Kolom waktu (created_at, dst.) disimpan sebagai teks ISO-8601 (UTC), sama seperti di aplikasi.
+--   * user_id berasal dari header X-User-Id (bawaan 'demo-user'); tidak ada tabel users (tanpa login).
+--   * strategy_methods dan ai_analysis berisi JSON dalam bentuk teks.
+
+-- ---------------------------------------------------------------- sesi Cek Pemahaman
+CREATE TABLE IF NOT EXISTS micro_goal_sessions (
+  id                        VARCHAR(32)  PRIMARY KEY,
+  user_id                   VARCHAR(64)  NOT NULL,
+  task_id                   VARCHAR(32),                 -- terisi setelah tugas disimpan
+  previous_session_id       VARCHAR(32),                 -- sesi sebelumnya bila "Ulangi"
+  attempt_no                INTEGER      NOT NULL DEFAULT 1,
+  -- snapshot konteks tugas (tugas belum tersimpan saat Cek Pemahaman berjalan)
+  course                    VARCHAR(100) NOT NULL,
+  task_title                VARCHAR(200) NOT NULL,
+  task_description          TEXT         NOT NULL DEFAULT '',
+  learning_goal             TEXT         NOT NULL DEFAULT '',
+  initial_confidence        INTEGER      NOT NULL CHECK (initial_confidence BETWEEN 0 AND 100),
+  articulation_text         TEXT,                        -- penjelasan mahasiswa
+  word_count                INTEGER,
+  ai_insight                TEXT,
+  ai_reason                 TEXT,
+  ai_recommended_difficulty VARCHAR(10) CHECK (ai_recommended_difficulty IN ('mudah','sedang','sulit')),
+  ai_analysis               TEXT,                        -- JSON: concept_coverage, concept_accuracy, key_elements, knowledge_gaps
+  analysis_source           VARCHAR(10)  CHECK (analysis_source IN ('llm','fallback')),
+  llm_model                 VARCHAR(80),
+  prompt_version            VARCHAR(80),
+  latency_ms                INTEGER,
+  revised_confidence        INTEGER      CHECK (revised_confidence BETWEEN 0 AND 100),
+  confidence_delta          INTEGER,                     -- revised_confidence - initial_confidence
+  status                    VARCHAR(10)  NOT NULL DEFAULT 'started'
+                            CHECK (status IN ('started','analyzed','completed')),
+  created_at                VARCHAR(30)  NOT NULL,
+  updated_at                VARCHAR(30)  NOT NULL,
+  completed_at              VARCHAR(30)
+);
+CREATE INDEX IF NOT EXISTS micro_goal_sessions_user_id_created_at
+  ON micro_goal_sessions (user_id, created_at);
+
+-- ---------------------------------------------------------------- tugas (kartu Kanban)
+CREATE TABLE IF NOT EXISTS tasks (
+  id                    VARCHAR(32)  PRIMARY KEY,
+  user_id               VARCHAR(64)  NOT NULL,
+  course                VARCHAR(100) NOT NULL,
+  title                 VARCHAR(200) NOT NULL,
+  description           TEXT         NOT NULL DEFAULT '',
+  strategy              VARCHAR(40)  NOT NULL CHECK (strategy IN ('simak','praktik','diskusi','uji')),
+  strategy_methods      TEXT         NOT NULL DEFAULT '[]',   -- JSON, mis. ["Baca","Video"]
+  learning_goal         TEXT         NOT NULL DEFAULT '',
+  priority              VARCHAR(10)  NOT NULL CHECK (priority IN ('rendah','sedang','tinggi')),
+  deadline_date         VARCHAR(10),                          -- YYYY-MM-DD
+  deadline_time         VARCHAR(5),                           -- HH:MM
+  difficulty            VARCHAR(10)  CHECK (difficulty IN ('mudah','sedang','sulit')), -- pilihan mahasiswa
+  track_grades          BOOLEAN      NOT NULL DEFAULT FALSE,
+  micro_goal_session_id VARCHAR(32),                          -- tautan ke micro_goal_sessions.id
+  created_at            VARCHAR(30)  NOT NULL,
+  status                VARCHAR(12)  NOT NULL DEFAULT 'planning'
+                        CHECK (status IN ('planning','in_progress','review','done')),
+  started_at            VARCHAR(30),                          -- saat masuk Monitoring
+  done_at               VARCHAR(30),                          -- saat masuk Reflection
+  felt_difficulty       VARCHAR(15)  CHECK (felt_difficulty IN ('lebih_ringan','pas','lebih_berat')),
+  reward_id             INTEGER      CHECK (reward_id BETWEEN 1 AND 40)
+);
+CREATE INDEX IF NOT EXISTS tasks_user_id_created_at ON tasks (user_id, created_at);
+
+-- ---------------------------------------------------------------- subtask
+CREATE TABLE IF NOT EXISTS subtasks (
+  id       SERIAL       PRIMARY KEY,
+  task_id  VARCHAR(32)  NOT NULL REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  title    VARCHAR(200) NOT NULL,
+  is_done  BOOLEAN      NOT NULL DEFAULT FALSE,
+  position INTEGER      NOT NULL DEFAULT 0
+);
+
+-- ---------------------------------------------------------------- tautan
+CREATE TABLE IF NOT EXISTS links (
+  id       SERIAL       PRIMARY KEY,
+  task_id  VARCHAR(32)  NOT NULL REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  title    VARCHAR(120) NOT NULL,
+  url      VARCHAR(500) NOT NULL,
+  position INTEGER      NOT NULL DEFAULT 0
+);
+
+UPDATE user_quiz_results
+SET 
+    unlocked_features = '[]'::jsonb, 
+    dominant_strategy = NULL
+WHERE user_profile = 'The All-Rounder';

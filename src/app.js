@@ -26,6 +26,7 @@ const llmRecommendationHistoryRoutes = require('./routes/llmRecommendationHistor
 const userAvatarRoutes = require('./routes/userAvatarRoutes');
 const llmRoutes = require('./routes/llmRouters');
 const { errorHandler } = require('./middleware/errorHandler');
+const llmMicroGoalRoutes = require('./routes/llmMicroGoalRoutes');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/user-activity-logs', userActivityLogRoutes);
 app.use('/api/llm-recommendation-histories', llmRecommendationHistoryRoutes);
 app.use('/api/user-avatar', userAvatarRoutes);
 app.use('/api/llmRekomen', llmRoutes);
+app.use('/api/llmMicro', llmMicroGoalRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

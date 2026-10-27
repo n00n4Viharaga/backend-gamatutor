@@ -40,9 +40,9 @@ const cardValidation = [
   body('courseName').optional().isString().isLength({ max: 50 }),
   body('difficulty').optional().isIn(['easy', 'medium', 'hard', 'expert']),
   body('priority').optional().isIn(['low', 'medium', 'high', 'critical']),
-  body('deadline').optional().isISO8601().withMessage('Valid deadline required (YYYY-MM-DD)'),
+  body('deadline').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Valid deadline required (YYYY-MM-DD)'),
   body('url').optional().isString(),
-  body('startTime').optional().isISO8601().withMessage('Valid start time required'),
+  body('startTime').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Valid start time required'),
   body('endTime').optional().isISO8601(),
   handleValidationErrors
 ];

@@ -10,10 +10,10 @@ const {
 
 const create = async (req, res, next) => {
   try {
-    const { answers } = req.body;
+    const answers = req.body.answersPayload; 
 
     if (!answers) {
-      return res.status(400).json({ error: 'Field "answers" wajib diisi.' });
+      return res.status(400).json({ error: 'Field "answersPayload" wajib diisi.' });
     }
 
     const result = await createQuizResult(req.user.userId, answers);

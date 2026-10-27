@@ -22,9 +22,9 @@ async function calculateStreak(userId) {
   const results = await UserQuizResult.findAll({ where: { userId }, order: [['createdAt', 'DESC']], limit: 60, raw: true });
   if (results.length === 0) return 1;
   const dayKey = (dt) => { const d = new Date(dt); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
-  let streak = 1; let prev = new Date(results[0].createdAt); prev.setHours(0,0,0,0);
+  let streak = 1; let prev = new Date(results[0].createdAt); prev.setHours(0, 0, 0, 0);
   for (let i = 1; i < results.length; i++) {
-    const curr = new Date(results[i].createdAt); curr.setHours(0,0,0,0);
+    const curr = new Date(results[i].createdAt); curr.setHours(0, 0, 0, 0);
     if (dayKey(curr) === dayKey(prev)) continue;
     const diff = Math.round((prev - curr) / (1000 * 60 * 60 * 24));
     if (diff === 1) { streak++; prev = curr; } else break;
@@ -33,7 +33,6 @@ async function calculateStreak(userId) {
 }
 
 const calculateQuizResult = (answersPayload) => {
-  // Validasi & Pipeline skoring lengkap (raw, counts, normalized, ranked)
   const raw = Object.fromEntries(CATEGORIES.map(c => [c, 0]));
   const counts = Object.fromEntries(CATEGORIES.map(c => [c, 0]));
   answersPayload.forEach(a => { raw[a.category] += a.score; counts[a.category] += 1; });
@@ -49,14 +48,16 @@ const calculateQuizResult = (answersPayload) => {
   const top = ranked[0], bottom = ranked[ranked.length - 1];
   const spread = top.score - bottom.score;
   const isBalanced = spread <= THRESHOLDS.BALANCED_SPREAD;
+
   const unlocked = ranked.filter(r => r.score < THRESHOLDS.UNLOCK).map(r => r.category);
-  if (unlocked.length === 0) unlocked.push(bottom.category);
 
   return {
-    dominant_strategy: top.category,
+    dominant_strategy: isBalanced ? null : top.category,
     user_profile: isBalanced ? 'The All-Rounder' : PROFILE_NAMES[top.category],
-    is_balanced: isBalanced, spread,
-    normalized_scores: normalized, ranked,
+    is_balanced: isBalanced,
+    spread,
+    normalized_scores: normalized,
+    ranked,
     unlocked_features: unlocked,
     locked_features: ranked.filter(r => r.score >= THRESHOLDS.UNLOCK).map(r => r.category),
   };
@@ -101,7 +102,7 @@ const createQuizResult = async (userId, answersPayload) => {
 
 const getAllQuizResults = async (filters = {}) => {
   const where = {};
-  if (filters.userId)          where.userId = filters.userId;
+  if (filters.userId) where.userId = filters.userId;
   if (filters.dominantStrategy) where.dominantStrategy = filters.dominantStrategy;
 
   return UserQuizResult.findAll({
@@ -111,8 +112,8 @@ const getAllQuizResults = async (filters = {}) => {
       as: 'user',
       attributes: ['userId', 'firstName', 'lastName', 'username'],
     }],
-    order:  [['createdAt', 'DESC']],
-    limit:  filters.limit  || 50,
+    order: [['createdAt', 'DESC']],
+    limit: filters.limit || 50,
     offset: filters.offset || 0,
   });
 };
@@ -132,8 +133,8 @@ const getQuizResultById = async (id) => {
 const getQuizResultsByUser = async (userId, filters = {}) => {
   return UserQuizResult.findAll({
     where: { userId },
-    order:  [['createdAt', 'DESC']],
-    limit:  filters.limit  || 50,
+    order: [['createdAt', 'DESC']],
+    limit: filters.limit || 50,
     offset: filters.offset || 0,
   });
 };

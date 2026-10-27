@@ -7,15 +7,19 @@ const createCard = async (userId, data) => {
     throw new AppError('User not found', 404);
   }
 
-  if (!data.course_name) {
+  if (!data.courseName) {
     throw new AppError('course_name is required', 400);
   }
-  if (!data.learningStrat) {
+
+  const learningId = data.learningStrat || data.learningId || data.learning_id;
+
+  if (!learningId) {
     throw new AppError('Learning strategy ID is required', 400);
   }
 
-  const learningStrat = await LearningStrat.findByPk(data.learningId);
-  if (!learningStrat) {
+  const strategy = await LearningStrat.findByPk(learningId);
+
+  if (!strategy) {
     throw new AppError('Learning strategy not found', 404);
   }
 
